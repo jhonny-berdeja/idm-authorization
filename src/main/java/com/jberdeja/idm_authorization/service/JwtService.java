@@ -15,14 +15,11 @@ import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtService {
-
     public static final long JWT_TOKEN_VALIDATY = 5 * 60 * 60;
     public static final String JWT_SECRET = "ClientSecret1ClientSecret2ClientSecret3XXX";
 
     private Claims getAllClaimsFromToken(String token){
-        
         final var key = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
-
         return Jwts
         .parserBuilder()
         .setSigningKey(key)
@@ -67,7 +64,6 @@ public class JwtService {
         .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDATY * 1000))
         .signWith(key)
         .compact();
-
     }
 
     public Boolean validateToken(String token, UserDetails userDetails){
@@ -75,6 +71,5 @@ public class JwtService {
         final var usernameFromJWT = this.getUsernameFromToken(token);
         boolean bb = this.isNotTokenExpired(token);
         return(usernameFromUserDetails.equals(usernameFromJWT)) && bb;
-        
     }
 }

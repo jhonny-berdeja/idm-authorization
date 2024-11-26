@@ -2,17 +2,15 @@ package com.jberdeja.idm_authorization.security;
 
 import java.io.IOException;
 import java.util.Objects;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import com.jberdeja.idm_authorization.service.JwtService;
-
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 @Slf4j
 public class JWTValidationFilter extends OncePerRequestFilter{
-
+    @Autowired
     private final JwtService jwtService;
     private final InMemoryUserDetailsManager jwtUserDetailService;
 
@@ -36,41 +34,64 @@ public class JWTValidationFilter extends OncePerRequestFilter{
                                     HttpServletRequest request
                                     , HttpServletResponse response
                                     , FilterChain filterChain) throws ServletException, IOException {
-        
-        final var requestTokenHeader = request.getHeader(AUTHORIZATION_HEADER);
 
-        String username = null;
-        String jwt = null;
-
-        if(Objects.nonNull(requestTokenHeader) 
-                && requestTokenHeader.startsWith(AUTHORIZATION_HEADER_BEARER)){
-            jwt = requestTokenHeader.substring(7);
-            try {
-                username = jwtService.getUsernameFromToken(jwt);
-            } catch (IllegalArgumentException e) {
-                log.error(e.getMessage());
-            } catch (ExpiredJwtException e) {
-                log.warn(e.getMessage());
-            }
-
-        }
-
-        if (Objects.nonNull(username)
-                && Objects.isNull(
-                    SecurityContextHolder.getContext().getAuthentication())) {
-            final var userDetails = this.jwtUserDetailService.loadUserByUsername(username);
-
-            if(this.jwtService.validateToken(jwt, userDetails)){
-                var usernameAndPasswordAuthToken = new UsernamePasswordAuthenticationToken(
-                    userDetails
-                    , null
-                    , userDetails.getAuthorities());
-
-                    usernameAndPasswordAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(usernameAndPasswordAuthToken);
-            }
-        }
-
+        var jwt = obtainJwt(request);
+        var username = jwtService.getUsernameFromToken(jwt);
+        var userDetails = obtainUserDetails(username);
+        validateToken(jwt, userDetails);
+        var usernameAndPasswordAuthToken = buildUsernamePasswordAuthenticationToken(userDetails);
+        usernameAndPasswordAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(usernameAndPasswordAuthToken);
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isNotValidTokenHeader(String requestTokenHeader){
+        return !isValidTokenHeader(requestTokenHeader);
+    }
+    private boolean isValidTokenHeader(String requestTokenHeader){
+        return Objects.nonNull(requestTokenHeader) 
+                    && requestTokenHeader.startsWith(AUTHORIZATION_HEADER_BEARER);
+    }
+
+    private boolean isNotValidUsername(String username){
+        return !isValidUsername(username);
+    }
+    private boolean isValidUsername(String username){
+        return Objects.nonNull(username) 
+                    && Objects.isNull(
+                            SecurityContextHolder.getContext().getAuthentication()
+                        );
+    }
+
+    private UsernamePasswordAuthenticationToken buildUsernamePasswordAuthenticationToken(UserDetails userDetails){
+        return new UsernamePasswordAuthenticationToken(
+            userDetails
+            , null
+            , userDetails.getAuthorities());
+    }
+
+    private boolean isNotValidToken(String jwt, UserDetails userDetails){
+        return !isValidToken(jwt, userDetails);
+    }
+    private boolean isValidToken(String jwt, UserDetails userDetails){
+       return this.jwtService.validateToken(jwt, userDetails);
+    }
+
+    private String obtainJwt(HttpServletRequest request){
+        var requestTokenHeader = request.getHeader(AUTHORIZATION_HEADER);
+        if(isNotValidTokenHeader(requestTokenHeader))
+            throw new RuntimeException("The token header is not valid");
+        return requestTokenHeader.substring(7);
+    }
+
+    private UserDetails obtainUserDetails(String username){
+        if(isNotValidUsername(username))
+            throw new RuntimeException("The username is not valid");
+        return this.jwtUserDetailService.loadUserByUsername(username);
+    }
+
+    private void validateToken(String jwt, UserDetails userDetails){
+        if(isNotValidToken(jwt, userDetails))
+        throw new RuntimeException("The token is not valid");
     }
 }
