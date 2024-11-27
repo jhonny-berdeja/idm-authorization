@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -84,7 +85,16 @@ public class SecurityConfig {
     }
     @SuppressWarnings("rawtypes")
     private CsrfConfigurer csrfConfigurer(CsrfConfigurer<HttpSecurity> httpSecurity){
-        return httpSecurity.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler());
+        httpSecurity.csrfTokenRepository(withHttpOnlyTrue());
+        httpSecurity.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler());
+        return httpSecurity;
+    }
+
+    @SuppressWarnings("deprecation")
+    public CookieCsrfTokenRepository withHttpOnlyTrue() {
+        CookieCsrfTokenRepository result = new CookieCsrfTokenRepository();
+        result.setCookieHttpOnly(true);
+        return result;
     }
         
     @SuppressWarnings("rawtypes")
