@@ -64,16 +64,16 @@ public class SecurityConfig {
         return NoOpPasswordEncoder.getInstance();
     } 
 
+    @Bean
+    AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception{
+        return configuration.getAuthenticationManager();
+    }
+
     CorsConfigurationSource corsConfigurationSource(){
         var config = buildCorsConfiguration();
         var source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
-    }
-
-    @Bean
-    AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception{
-        return configuration.getAuthenticationManager();
     }
 
     private CorsConfiguration buildCorsConfiguration(){
