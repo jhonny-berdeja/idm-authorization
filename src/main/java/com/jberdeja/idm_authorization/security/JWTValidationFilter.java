@@ -45,14 +45,22 @@ public class JWTValidationFilter extends OncePerRequestFilter{
         filterChain.doFilter(request, response);
     }
 
-    private boolean isNotValidTokenHeader(String requestTokenHeader){
-        return !isValidTokenHeader(requestTokenHeader);
-    }
-    private boolean isValidTokenHeader(String requestTokenHeader){
-        return Objects.nonNull(requestTokenHeader) 
-                    && requestTokenHeader.startsWith(AUTHORIZATION_HEADER_BEARER);
+    private void validateToken(String jwt, UserDetails userDetails){
+        if(isNotValidToken(jwt, userDetails))
+        throw new RuntimeException("The token is not valid");
     }
 
+    private boolean isNotValidToken(String jwt, UserDetails userDetails){
+        return !isValidToken(jwt, userDetails);
+    }
+    private boolean isValidToken(String jwt, UserDetails userDetails){
+       return jwtService.validateToken(jwt, userDetails);
+    }
+    private UserDetails obtainUserDetails(String username){
+        if(isNotValidUsername(username))
+            throw new RuntimeException("The username is not valid");
+        return this.jwtUserDetailService.loadUserByUsername(username);
+    }
     private boolean isNotValidUsername(String username){
         return !isValidUsername(username);
     }
@@ -70,13 +78,6 @@ public class JWTValidationFilter extends OncePerRequestFilter{
             , userDetails.getAuthorities());
     }
 
-    private boolean isNotValidToken(String jwt, UserDetails userDetails){
-        return !isValidToken(jwt, userDetails);
-    }
-    private boolean isValidToken(String jwt, UserDetails userDetails){
-       return this.jwtService.validateToken(jwt, userDetails);
-    }
-
     private String obtainJwt(HttpServletRequest request){
         var requestTokenHeader = request.getHeader(AUTHORIZATION_HEADER);
         if(isNotValidTokenHeader(requestTokenHeader))
@@ -84,14 +85,11 @@ public class JWTValidationFilter extends OncePerRequestFilter{
         return requestTokenHeader.substring(7);
     }
 
-    private UserDetails obtainUserDetails(String username){
-        if(isNotValidUsername(username))
-            throw new RuntimeException("The username is not valid");
-        return this.jwtUserDetailService.loadUserByUsername(username);
+    private boolean isNotValidTokenHeader(String requestTokenHeader){
+        return !isValidTokenHeader(requestTokenHeader);
     }
-
-    private void validateToken(String jwt, UserDetails userDetails){
-        if(isNotValidToken(jwt, userDetails))
-        throw new RuntimeException("The token is not valid");
+    private boolean isValidTokenHeader(String requestTokenHeader){
+        return Objects.nonNull(requestTokenHeader) 
+                    && requestTokenHeader.startsWith(AUTHORIZATION_HEADER_BEARER);
     }
 }
