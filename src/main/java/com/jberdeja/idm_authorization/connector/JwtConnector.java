@@ -39,7 +39,7 @@ public class JwtConnector {
         
             String url = "http://localhost:8080/authenticate";
 
-            JWTAuthenticateRequest body = new JWTAuthenticateRequest("admin", "to_be_encoded");
+            JWTAuthenticateRequest body = new JWTAuthenticateRequest("admin@jhonnyberdeja.com", "to_be_encoded");
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("Content-Type", "application/json");

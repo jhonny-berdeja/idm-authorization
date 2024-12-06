@@ -11,6 +11,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import com.jberdeja.idm_authorization.service.JwtService;
+import com.jberdeja.idm_authorization.service.UserIDMDetailsService;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class JWTValidationFilter extends OncePerRequestFilter{
     @Autowired
     private final JwtService jwtService;
-    private final InMemoryUserDetailsManager jwtUserDetailService;
+    private final UserIDMDetailsService jwtUserDetailService;
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String AUTHORIZATION_HEADER_BEARER = "Bearer ";
@@ -34,15 +36,18 @@ public class JWTValidationFilter extends OncePerRequestFilter{
                                     HttpServletRequest request
                                     , HttpServletResponse response
                                     , FilterChain filterChain) throws ServletException, IOException {
-
-        var jwt = obtainJwt(request);
-        var username = jwtService.getUsernameFromToken(jwt);
-        var userDetails = obtainUserDetails(username);
-        validateToken(jwt, userDetails);
-        var usernameAndPasswordAuthToken = buildUsernamePasswordAuthenticationToken(userDetails);
-        usernameAndPasswordAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(usernameAndPasswordAuthToken);
-        filterChain.doFilter(request, response);
+        try {
+            var jwt = obtainJwt(request);
+            var username = jwtService.getUsernameFromToken(jwt);
+            var userDetails = obtainUserDetails(username);
+            validateToken(jwt, userDetails);
+            var usernameAndPasswordAuthToken = buildUsernamePasswordAuthenticationToken(userDetails);
+            usernameAndPasswordAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(usernameAndPasswordAuthToken);
+            filterChain.doFilter(request, response);
+        } catch (RuntimeException e) {
+            log.error("Eror validate token" + e);
+        }
     }
 
     private void validateToken(String jwt, UserDetails userDetails){

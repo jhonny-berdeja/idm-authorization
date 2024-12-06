@@ -20,15 +20,12 @@ public class CsrfCookieFilter extends OncePerRequestFilter{
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) 
-                                    throws ServletException, IOException{
-        var csrfToken = (CsrfToken)request.getAttribute(CsrfToken.class.getName());
-                                    
+                                    throws ServletException, IOException{                 
+        var csrfToken = (CsrfToken)request.getAttribute(CsrfToken.class.getName());                               
         if(Objects.nonNull(csrfToken.getHeaderName())){
             response.setHeader(csrfToken.getHeaderName(), csrfToken.getToken());
         }
-
-        filterChain.doFilter(request, response);
-                                    
+        filterChain.doFilter(request, response);                
     }
 
 }

@@ -8,13 +8,12 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizationManagerRequestMatcherRegistry;
+import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -25,8 +24,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 public class SecurityConfig {
-    private static final String ROUTE_CARDS = "/cards";
-    private static final String ROLE_CARDS = "CARDS";
+    private static final String ROLE_ADMIN = "ADMIN";
+    private static final String ROUTE_CREATE_USER = "/create-user";
     @Autowired
     CsrfCookieFilter csrfCookieFilter;
 
@@ -35,28 +34,14 @@ public class SecurityConfig {
                                                 HttpSecurity http
                                                 , JWTValidationFilter jwtValidationFilter
                                             ) throws Exception{
+        
         http.sessionManagement(sess-> sessionManagementConfigurer(sess));
         http.authorizeHttpRequests(auth -> authorizeHttpRequestsConfigurer(auth));
         http.addFilterAfter(jwtValidationFilter, BasicAuthenticationFilter.class);
-        http.cors(cors->corsConfigurationSource());
+        http.cors(cors->corsConfigurationSource(cors));
         http.csrf(csrf->csrfConfigurer(csrf))
                         .addFilterAfter(csrfCookieFilter,  BasicAuthenticationFilter.class);
         return http.build();
-    }
-
-    @Bean
-    InMemoryUserDetailsManager inMemoryUserDetailsManager(){
-        var admin = User.withUsername("admin")
-        .password("to_be_encoded")
-        .authorities("ROLE_CARDS")
-        .build();
-
-        var user = User.withUsername("user")
-        .password("to_be_encoded")
-        .authorities("ROLE_CARDS")
-        .build();
-
-        return new InMemoryUserDetailsManager(admin, user);
     }
 
     @Bean
@@ -69,10 +54,11 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
-    CorsConfigurationSource corsConfigurationSource(){
+    CorsConfigurationSource corsConfigurationSource(CorsConfigurer<HttpSecurity> httpSecurity){
         var config = buildCorsConfiguration();
         var source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
+        httpSecurity.configurationSource(source);
         return source;
     }
 
@@ -100,7 +86,7 @@ public class SecurityConfig {
     @SuppressWarnings("rawtypes")
     private AuthorizationManagerRequestMatcherRegistry authorizeHttpRequestsConfigurer( 
                             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth) {
-        return auth.requestMatchers(ROUTE_CARDS).hasRole(ROLE_CARDS);
+        return auth.requestMatchers("/**").hasRole(ROLE_ADMIN);
     }
         
     @SuppressWarnings("rawtypes")
