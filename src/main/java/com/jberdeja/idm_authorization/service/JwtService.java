@@ -1,66 +1,59 @@
 package com.jberdeja.idm_authorization.service;
 
 import java.util.Date;
-import java.util.Map;
-import java.util.function.Function;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
+import java.util.Objects;
 import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jberdeja.idm_authorization.connector.JwtConnector;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class JwtService {
-    public static final long JWT_TOKEN_VALIDATY = 5 * 60 * 60;
-    public static final String JWT_SECRET = "ClientSecret1ClientSecret2ClientSecret3XXX";
-    @Autowired
-    private JwtConnector connector;
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String AUTHORIZATION_HEADER_BEARER = "Bearer ";
+    private static final String PREFIX_BEARER = "(?i)Bearer ";
+    private static final String EMPTY = "";
 
-    public Boolean validateToken(String token, UserDetails userDetails){
-        var usernameFromJwt = getUsernameFromToken(token);
-        var usernameFromUserDetails = userDetails.getUsername();
-        return usernameFromUserDetails.equals(usernameFromJwt) && isNotTokenExpired(token);
+    public String obtainTokenOfHttpServletRequest(HttpServletRequest request) {
+        var requestTokenHeader = request.getHeader(AUTHORIZATION_HEADER);
+        if(isNotValidTokenHeader(requestTokenHeader))
+            throw new IllegalArgumentException("The token header is not valid");
+        return requestTokenHeader.replaceFirst(PREFIX_BEARER, EMPTY);
+
     }
 
-    private Boolean isNotTokenExpired(String token){
-        return !isTokenExpired(token);
-    }
-
-    private Boolean isTokenExpired(String token){
-        var expirationDate = getExpirationDateFromToken(token);
-        return expirationDate.before(new Date());
-    }
-
-    public String getUsernameFromToken(String token){
-        return getClaimsFromToken(token, Claims::getSubject);
-    }
-
-    private Date getExpirationDateFromToken(String token){
-        return getClaimsFromToken(token, Claims::getExpiration);
-    }
-
-    private <T> T getClaimsFromToken(String token, Function<Claims, T> claimsResolver ){
-        var claims = getAllClaimsFromToken(token);
-        return claimsResolver.apply(claims);
-    }
-
-    private Claims getAllClaimsFromToken(String token){
-        String responseJson = connector.getClaims(token);
-        Claims claims = getClaimsFromResponse(responseJson);
-        return claims;
-    }
-
-    public Claims getClaimsFromResponse(String jsonResponse) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            Map<String, Object> claimsMap = objectMapper.readValue(jsonResponse, Map.class);
-            return Jwts.claims(claimsMap);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+    public void validateUsernameFromToken(String username){
+        if(isNotValidUsername(username)){
+            log.error("The token username is not valid");
+            throw new IllegalArgumentException("The token username is not valid");
         }
+    }
+
+    public void validateExpirationToken(Claims claimsFromTokem){
+        if(claimsFromTokem.getExpiration().before(new Date())){
+            log.error("The token expired");
+            throw new IllegalArgumentException("The token expired");
+        }
+    }
+
+    private boolean isNotValidUsername(String username){
+        return !isValidUsername(username);
+    }
+
+    private boolean isValidUsername(String username){
+        return Objects.nonNull(username) && isNotBlackUsername(username);
+    }
+
+    private boolean isNotBlackUsername(String username){
+        return !username.isBlank();
+    }
+
+    private boolean isNotValidTokenHeader(String requestTokenHeader){
+        return !isValidTokenHeader(requestTokenHeader);
+    }
+    private boolean isValidTokenHeader(String requestTokenHeader){
+        return Objects.nonNull(requestTokenHeader) 
+                    && requestTokenHeader.startsWith(AUTHORIZATION_HEADER_BEARER);
     }
 }

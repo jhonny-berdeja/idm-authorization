@@ -1,7 +1,7 @@
 package com.jberdeja.idm_authorization.service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,22 +29,22 @@ public class UserIDMService {
     }
         
     private UserIDMEntity userIDMEntityMapper(UserIDMRequest userIDMRequest) {
-        List<RoleIDMEntity> roles = new ArrayList<>();
-        
-        for (String roleName : userIDMRequest.getRoles()) {
-            log.info("Role of request: " + roleName);
-            RoleIDMEntity roleEntity = buildRoleIDMEntity(roleName);
-            roles.add(roleEntity);
-        }
+        List<RoleIDMEntity> roles = userIDMRequest.getRoles().stream()
+                                    .map(this::buildRoleIDMEntity) 
+                                    .collect(Collectors.toList()); 
 
+        UserIDMEntity user = buildUserIDMEntity(userIDMRequest, roles);
+        log.info("User to create ok ");
+        return user;
+    }
+
+    private UserIDMEntity buildUserIDMEntity(UserIDMRequest userIDMRequest, List<RoleIDMEntity> roles){
         UserIDMEntity user = new UserIDMEntity();
         user.setEmail(userIDMRequest.getEmail());
         user.setPwd(userIDMRequest.getPassword());
         user.setRoles(roles);
-        log.info("User to create: " + user);
         return user;
     }
-
     
     private RoleIDMEntity buildRoleIDMEntity(String roleName) {
         RoleIDMEntity roleEntity = roleIDMRepository.findByRoleName(roleName)

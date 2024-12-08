@@ -6,13 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import com.jberdeja.idm_authorization.service.JwtService;
+import com.jberdeja.idm_authorization.service.ClaimsService;
 import com.jberdeja.idm_authorization.service.UserIDMDetailsService;
-
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,12 +23,11 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 @Slf4j
 public class JWTValidationFilter extends OncePerRequestFilter{
-    @Autowired
-    private final JwtService jwtService;
-    private final UserIDMDetailsService jwtUserDetailService;
 
-    private static final String AUTHORIZATION_HEADER = "Authorization";
-    private static final String AUTHORIZATION_HEADER_BEARER = "Bearer ";
+    @Autowired
+    private UserIDMDetailsService userIDMDetailsService;
+    @Autowired
+    private ClaimsService claimsService;
 
     @Override
     protected void doFilterInternal(
@@ -37,64 +35,67 @@ public class JWTValidationFilter extends OncePerRequestFilter{
                                     , HttpServletResponse response
                                     , FilterChain filterChain) throws ServletException, IOException {
         try {
-            var jwt = obtainJwt(request);
-            var username = jwtService.getUsernameFromToken(jwt);
-            var userDetails = obtainUserDetails(username);
-            validateToken(jwt, userDetails);
-            var usernameAndPasswordAuthToken = buildUsernamePasswordAuthenticationToken(userDetails);
-            usernameAndPasswordAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(usernameAndPasswordAuthToken);
+            validateAuthenticationInContextOfCurrentTread();
+            Claims claimsFromToken = claimsService.obtainCliamsFromToken(request);
+            String usernameFromToken = claimsService.obtainUsernameFromClaimasFromToken(claimsFromToken);
+            UserDetails userDetailsFromDatabase = obtainUserDetailsFromDatabase(usernameFromToken);
+            validateIfTokenIsOfAuthenticatedUser(usernameFromToken, userDetailsFromDatabase);
+            addAuthenticationToContextOfCurrentTread(userDetailsFromDatabase, request);
             filterChain.doFilter(request, response);
         } catch (RuntimeException e) {
-            log.error("Eror validate token" + e);
+            log.error("Eror validate token", e);
+            throw new RuntimeException("Eror validate token", e);
         }
     }
 
-    private void validateToken(String jwt, UserDetails userDetails){
-        if(isNotValidToken(jwt, userDetails))
-        throw new RuntimeException("The token is not valid");
+    private UserDetails obtainUserDetailsFromDatabase(String username){
+        return userIDMDetailsService.loadUserByUsername(username);
     }
 
-    private boolean isNotValidToken(String jwt, UserDetails userDetails){
-        return !isValidToken(jwt, userDetails);
-    }
-    private boolean isValidToken(String jwt, UserDetails userDetails){
-       return jwtService.validateToken(jwt, userDetails);
-    }
-    private UserDetails obtainUserDetails(String username){
-        if(isNotValidUsername(username))
-            throw new RuntimeException("The username is not valid");
-        return this.jwtUserDetailService.loadUserByUsername(username);
-    }
-    private boolean isNotValidUsername(String username){
-        return !isValidUsername(username);
-    }
-    private boolean isValidUsername(String username){
-        return Objects.nonNull(username) 
-                    && Objects.isNull(
-                            SecurityContextHolder.getContext().getAuthentication()
-                        );
+    private void addAuthenticationToContextOfCurrentTread(UserDetails userDetailsFromDatabase, HttpServletRequest request){
+        var usernameAndPasswordAuthToken = buildUsernamePasswordAuthenticationToken(userDetailsFromDatabase, request);
+        addAuthenticationToContextOfCurrentTread(usernameAndPasswordAuthToken);
     }
 
-    private UsernamePasswordAuthenticationToken buildUsernamePasswordAuthenticationToken(UserDetails userDetails){
-        return new UsernamePasswordAuthenticationToken(
+    private void addAuthenticationToContextOfCurrentTread(UsernamePasswordAuthenticationToken usernameAndPasswordAuthToken){
+        SecurityContextHolder.getContext().setAuthentication(usernameAndPasswordAuthToken);
+    }
+
+    private UsernamePasswordAuthenticationToken buildUsernamePasswordAuthenticationToken(UserDetails userDetails, HttpServletRequest request){
+        var usernameAndPasswordAuthToken = new UsernamePasswordAuthenticationToken(
             userDetails
             , null
             , userDetails.getAuthorities());
+        usernameAndPasswordAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        return usernameAndPasswordAuthToken;
     }
 
-    private String obtainJwt(HttpServletRequest request){
-        var requestTokenHeader = request.getHeader(AUTHORIZATION_HEADER);
-        if(isNotValidTokenHeader(requestTokenHeader))
-            throw new RuntimeException("The token header is not valid");
-        return requestTokenHeader.substring(7);
+    private void validateAuthenticationInContextOfCurrentTread(){
+        if(existAuthenticationInContextOfCurrentTread()){
+            log.error("An authentication already exists in the context of the current thread");
+            throw new RuntimeException("An authentication already exists in the context of the current thread");
+        }
     }
 
-    private boolean isNotValidTokenHeader(String requestTokenHeader){
-        return !isValidTokenHeader(requestTokenHeader);
+    private boolean existAuthenticationInContextOfCurrentTread(){
+        if(Objects.isNull(SecurityContextHolder.getContext().getAuthentication()))
+            return false;
+        return true;
     }
-    private boolean isValidTokenHeader(String requestTokenHeader){
-        return Objects.nonNull(requestTokenHeader) 
-                    && requestTokenHeader.startsWith(AUTHORIZATION_HEADER_BEARER);
+    
+    private void validateIfTokenIsOfAuthenticatedUser(String usernameFromToken, UserDetails userDetailsFromDatabase ){
+        String usernameFromDatabase = userDetailsFromDatabase.getUsername();
+        if(isNotTokenOwnedByAuthenticatedUser(usernameFromToken, usernameFromDatabase)){
+            log.error("Error the token is not from the authenticated user");
+            throw new IllegalArgumentException("Error the token is not from the authenticated user");
+        }
+    }
+
+    private boolean isNotTokenOwnedByAuthenticatedUser(String usernameFromToken, String usernameFromDatabase){
+        return !isTokenOwnedByAuthenticatedUser(usernameFromToken, usernameFromDatabase);
+    }
+
+    private boolean isTokenOwnedByAuthenticatedUser(String usernameFromToken, String usernameFromDatabase){
+        return usernameFromToken.equalsIgnoreCase(usernameFromDatabase);
     }
 }

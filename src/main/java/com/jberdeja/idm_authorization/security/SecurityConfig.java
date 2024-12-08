@@ -39,8 +39,8 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> authorizeHttpRequestsConfigurer(auth));
         http.addFilterAfter(jwtValidationFilter, BasicAuthenticationFilter.class);
         http.cors(cors->corsConfigurationSource(cors));
-        http.csrf(csrf->csrfConfigurer(csrf))
-                        .addFilterAfter(csrfCookieFilter,  BasicAuthenticationFilter.class);
+        http.csrf(csrf->csrfConfigurer(csrf));
+        http.addFilterAfter(csrfCookieFilter,  BasicAuthenticationFilter.class);
         return http.build();
     }
 
@@ -91,6 +91,11 @@ public class SecurityConfig {
         
     @SuppressWarnings("rawtypes")
     private SessionManagementConfigurer sessionManagementConfigurer(SessionManagementConfigurer<HttpSecurity> sessionManagementConfigurer){
+        return createPolicyToNotSaveTokenInSessions(sessionManagementConfigurer);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private SessionManagementConfigurer createPolicyToNotSaveTokenInSessions(SessionManagementConfigurer<HttpSecurity> sessionManagementConfigurer){
         return sessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 }

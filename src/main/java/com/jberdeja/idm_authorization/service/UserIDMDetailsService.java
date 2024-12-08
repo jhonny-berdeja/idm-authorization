@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 public class UserIDMDetailsService implements UserDetailsService{
-
     private final UserIDMRepository userIDMRepository;
 
     @Override
