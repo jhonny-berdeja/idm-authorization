@@ -1,4 +1,4 @@
-package com.jberdeja.idm_authorization.entityes;
+package com.jberdeja.idm_authorization.entity;
 
 import java.util.List;
 import jakarta.persistence.Entity;

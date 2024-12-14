@@ -35,10 +35,11 @@ public class JWTValidationFilter extends OncePerRequestFilter{
                                     , HttpServletResponse response
                                     , FilterChain filterChain) throws ServletException, IOException {
         try {
+            //falta excluir el filtro para la ruta /hello , copiar de idm-authentication
             validateAuthenticationInContextOfCurrentTread();
-            Claims claimsFromToken = claimsService.obtainCliamsFromToken(request);
-            String usernameFromToken = claimsService.obtainUsernameFromClaimasFromToken(claimsFromToken);
-            UserDetails userDetailsFromDatabase = obtainUserDetailsFromDatabase(usernameFromToken);
+            Claims claimsOfToken = claimsService.obtainCliamsOfToken(request);
+            String usernameFromToken = claimsService.obtainUsernameOfClaimasOfToken(claimsOfToken);
+            UserDetails userDetailsFromDatabase = obtainUserDetailsOfDatabase(usernameFromToken);
             validateIfTokenIsOfAuthenticatedUser(usernameFromToken, userDetailsFromDatabase);
             addAuthenticationToContextOfCurrentTread(userDetailsFromDatabase, request);
             filterChain.doFilter(request, response);
@@ -48,7 +49,7 @@ public class JWTValidationFilter extends OncePerRequestFilter{
         }
     }
 
-    private UserDetails obtainUserDetailsFromDatabase(String username){
+    private UserDetails obtainUserDetailsOfDatabase(String username){
         return userIDMDetailsService.loadUserByUsername(username);
     }
 

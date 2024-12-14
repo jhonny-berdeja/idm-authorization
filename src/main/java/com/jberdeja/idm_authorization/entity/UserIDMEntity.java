@@ -1,10 +1,6 @@
-package com.jberdeja.idm_authorization.entityes;
+package com.jberdeja.idm_authorization.entity;
 
 import java.util.List;
-import java.util.Set;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;

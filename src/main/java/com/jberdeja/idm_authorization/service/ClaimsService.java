@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jberdeja.idm_authorization.connector.JwtConnector;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,33 +19,33 @@ public class ClaimsService {
     @Autowired
     private JwtService jwtService;
 
-    public Claims obtainCliamsFromToken(HttpServletRequest request){
-        String token = jwtService.obtainTokenOfHttpServletRequest(request);
-        Claims claimsFromToken = getClaimsFromToken(token);
-        jwtService.validateExpirationToken(claimsFromToken);
-        return claimsFromToken;
+    public Claims obtainCliamsOfToken(HttpServletRequest request){
+        String token = jwtService.obtainTokenOfHeaders(request);
+        Claims claimsOfToken = getClaimsOfToken(token);
+        jwtService.validateExpirationToken(claimsOfToken);
+        return claimsOfToken;
     }
 
     public Claims getAllClaimsFromToken(String token){
-        String responseJson = jwtConnector.obtainClaimsFromToken(token);
-        Claims claims = getClaimsFromResponse(responseJson);
-        return claims;
+        String claimsJson = jwtConnector.obtainClaimsOfToken(token);
+        Claims claimsObject = convertClaimsJsonToObjectClaims(claimsJson);
+        return claimsObject;
     }
 
-    public String obtainUsernameFromClaimasFromToken(Claims claimsFromToken){
-        String usernameFromToken = claimsFromToken.getSubject();
-        jwtService.validateUsernameFromToken(usernameFromToken);
-        return usernameFromToken;
+    public String obtainUsernameOfClaimasOfToken(Claims claimsOfToken){
+        String usernameOfClaims = claimsOfToken.getSubject();
+        jwtService.validateUsernamen(usernameOfClaims);
+        return usernameOfClaims;
     }
 
-    private Claims getClaimsFromToken(String token){
-        String claimsJson = jwtConnector.obtainClaimsFromToken(token);
+    private Claims getClaimsOfToken(String token){
+        String claimsJson = jwtConnector.obtainClaimsOfToken(token);
         Claims claims = convertJsonStringToObjectClaims(claimsJson);
         return claims;
     }
 
     @SuppressWarnings("unchecked")
-    private Claims getClaimsFromResponse(String jsonResponse) {
+    private Claims convertClaimsJsonToObjectClaims(String jsonResponse) {// Evalidar para llevarlo a un mapper
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             Map<String, Object> claimsMap = objectMapper.readValue(jsonResponse, Map.class);

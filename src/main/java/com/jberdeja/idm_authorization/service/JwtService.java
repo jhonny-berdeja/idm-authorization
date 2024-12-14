@@ -15,15 +15,15 @@ public class JwtService {
     private static final String PREFIX_BEARER = "(?i)Bearer ";
     private static final String EMPTY = "";
 
-    public String obtainTokenOfHttpServletRequest(HttpServletRequest request) {
-        var requestTokenHeader = request.getHeader(AUTHORIZATION_HEADER);
-        if(isNotValidTokenHeader(requestTokenHeader))
+    public String obtainTokenOfHeaders(HttpServletRequest request) {
+        var tokenOfHeaders = request.getHeader(AUTHORIZATION_HEADER);
+        if(isNotValidTokenOfHeader(tokenOfHeaders))
             throw new IllegalArgumentException("The token header is not valid");
-        return requestTokenHeader.replaceFirst(PREFIX_BEARER, EMPTY);
+        return tokenOfHeaders.replaceFirst(PREFIX_BEARER, EMPTY);
 
     }
 
-    public void validateUsernameFromToken(String username){
+    public void validateUsernamen(String username){
         if(isNotValidUsername(username)){
             log.error("The token username is not valid");
             throw new IllegalArgumentException("The token username is not valid");
@@ -49,10 +49,10 @@ public class JwtService {
         return !username.isBlank();
     }
 
-    private boolean isNotValidTokenHeader(String requestTokenHeader){
-        return !isValidTokenHeader(requestTokenHeader);
+    private boolean isNotValidTokenOfHeader(String requestTokenHeader){
+        return !isValidTokenOfHeader(requestTokenHeader);
     }
-    private boolean isValidTokenHeader(String requestTokenHeader){
+    private boolean isValidTokenOfHeader(String requestTokenHeader){
         return Objects.nonNull(requestTokenHeader) 
                     && requestTokenHeader.startsWith(AUTHORIZATION_HEADER_BEARER);
     }

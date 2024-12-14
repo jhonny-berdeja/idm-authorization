@@ -5,9 +5,10 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.jberdeja.idm_authorization.entityes.RoleIDMEntity;
-import com.jberdeja.idm_authorization.entityes.UserIDMEntity;
-import com.jberdeja.idm_authorization.entityes.UserIDMRequest;
+
+import com.jberdeja.idm_authorization.dto.UserIDMRequest;
+import com.jberdeja.idm_authorization.entity.RoleIDMEntity;
+import com.jberdeja.idm_authorization.entity.UserIDMEntity;
 import com.jberdeja.idm_authorization.repository.RoleIDMRepository;
 import com.jberdeja.idm_authorization.repository.UserIDMRepository;
 import lombok.extern.slf4j.Slf4j;

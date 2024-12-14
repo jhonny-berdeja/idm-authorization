@@ -26,6 +26,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String ROUTE_CREATE_USER = "/create-user";
+    private static final String ROUTE_GET_APPLICATION = "/get-application/**";
+    private static final String ROUTE_CREATE_APPLICATION = "/create-application";
+    private static final String ROUTE_GET_APPLICATIONS = "/get-applications";
+    private static final String ROUTE_DOCUMENT_ACCESS_MANAGEMENT = "/document-access-management";
+    private static final String ROUTE_HELLO = "/hello";
+    private static final String POST = "post";
+    private static final String GET = "get";
     @Autowired
     CsrfCookieFilter csrfCookieFilter;
 
@@ -37,13 +44,14 @@ public class SecurityConfig {
         
         http.sessionManagement(sess-> sessionManagementConfigurer(sess));
         http.authorizeHttpRequests(auth -> authorizeHttpRequestsConfigurer(auth));
-        http.addFilterAfter(jwtValidationFilter, BasicAuthenticationFilter.class);
+        http.addFilterAfter(jwtValidationFilter, BasicAuthenticationFilter.class);//?
         http.cors(cors->corsConfigurationSource(cors));
         http.csrf(csrf->csrfConfigurer(csrf));
-        http.addFilterAfter(csrfCookieFilter,  BasicAuthenticationFilter.class);
+        http.addFilterAfter(csrfCookieFilter,  BasicAuthenticationFilter.class);//?
         return http.build();
     }
 
+    @SuppressWarnings("deprecation")
     @Bean
     PasswordEncoder passwordEncoder(){
         return NoOpPasswordEncoder.getInstance();
@@ -55,24 +63,66 @@ public class SecurityConfig {
     }
 
     CorsConfigurationSource corsConfigurationSource(CorsConfigurer<HttpSecurity> httpSecurity){
-        var config = buildCorsConfiguration();
+        var configCreateUser = buildCorsConfigurationCreateUser();
+        var configCreateApplication = buildCorsConfigurationCreateApplication();
+        var configGetApplications = buildCorsConfigurationGetApplications();
+        var configGetApplication = buildCorsConfigurationGetApplication();
+        var configDocumentAccessManagement = buildCorsConfigurationDocumentAccessManagement();
         var source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration(ROUTE_CREATE_USER, configCreateUser);
+        source.registerCorsConfiguration(ROUTE_CREATE_APPLICATION, configCreateApplication);
+        source.registerCorsConfiguration(ROUTE_GET_APPLICATIONS, configGetApplications);
+        source.registerCorsConfiguration(ROUTE_GET_APPLICATION, configGetApplication);
+        source.registerCorsConfiguration(ROUTE_DOCUMENT_ACCESS_MANAGEMENT, configDocumentAccessManagement);
         httpSecurity.configurationSource(source);
         return source;
     }
 
-    private CorsConfiguration buildCorsConfiguration(){
+    private CorsConfiguration buildCorsConfigurationCreateUser(){
         var config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("*"));
-        config.setAllowedMethods(List.of("*"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedOrigins(List.of("*"));// limitar el origen cuando se cree un DNS para el frontend
+        config.setAllowedMethods(List.of(POST));
+        config.setAllowedHeaders(List.of("*"));//Limitar los headers, debe permitir X-XSRF-TOKEN
         return config;
     }
+
+    private CorsConfiguration buildCorsConfigurationCreateApplication(){
+        var config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("*"));// limitar el origen cuando se cree un DNS para el frontend
+        config.setAllowedMethods(List.of(POST));
+        config.setAllowedHeaders(List.of("*"));//Limitar los headers, debe permitir X-XSRF-TOKEN
+        return config;
+    }
+
+    private CorsConfiguration buildCorsConfigurationGetApplications(){
+        var config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("*"));// limitar el origen cuando se cree un DNS para el frontend
+        config.setAllowedMethods(List.of(GET));
+        config.setAllowedHeaders(List.of("*"));//Limitar los headers, debe permitir X-XSRF-TOKEN
+        return config;
+    }
+
+    private CorsConfiguration buildCorsConfigurationGetApplication(){
+        var config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("*"));// limitar el origen cuando se cree un DNS para el frontend
+        config.setAllowedMethods(List.of(GET));
+        config.setAllowedHeaders(List.of("*"));//Limitar los headers, debe permitir X-XSRF-TOKEN
+        return config;
+    }
+
+    private CorsConfiguration buildCorsConfigurationDocumentAccessManagement(){
+        var config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("*"));// limitar el origen cuando se cree un DNS para el frontend
+        config.setAllowedMethods(List.of(POST));
+        config.setAllowedHeaders(List.of("*"));//Limitar los headers, debe permitir X-XSRF-TOKEN
+        return config;
+    }
+
     @SuppressWarnings("rawtypes")
     private CsrfConfigurer csrfConfigurer(CsrfConfigurer<HttpSecurity> httpSecurity){
         httpSecurity.csrfTokenRepository(withHttpOnlyTrue());
         httpSecurity.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler());
+        httpSecurity.ignoringRequestMatchers(ROUTE_HELLO);
         return httpSecurity;
     }
 
@@ -86,7 +136,13 @@ public class SecurityConfig {
     @SuppressWarnings("rawtypes")
     private AuthorizationManagerRequestMatcherRegistry authorizeHttpRequestsConfigurer( 
                             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth) {
-        return auth.requestMatchers("/**").hasRole(ROLE_ADMIN);
+        auth.requestMatchers(ROUTE_CREATE_USER).hasRole(ROLE_ADMIN);
+        auth.requestMatchers(ROUTE_CREATE_APPLICATION).hasRole(ROLE_ADMIN);
+        auth.requestMatchers(ROUTE_GET_APPLICATIONS).hasRole(ROLE_ADMIN);
+        auth.requestMatchers(ROUTE_GET_APPLICATION).hasRole(ROLE_ADMIN);
+        auth.requestMatchers(ROUTE_DOCUMENT_ACCESS_MANAGEMENT).hasRole(ROLE_ADMIN);
+        auth.requestMatchers(ROUTE_HELLO).permitAll();
+        return auth;
     }
         
     @SuppressWarnings("rawtypes")

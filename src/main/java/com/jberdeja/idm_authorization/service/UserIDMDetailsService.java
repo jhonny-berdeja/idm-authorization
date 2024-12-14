@@ -19,16 +19,16 @@ public class UserIDMDetailsService implements UserDetailsService{
         return userIDMRepository.findByEmail(username)
             .map(
                 
-                customer->{ 
-                    final var authorities = customer.getRoles()
+                userIDMEntity->{ 
+                    final var authorities = userIDMEntity.getRoles()
                     .stream()
                     .map(
                         role->new SimpleGrantedAuthority(role.getRoleName())
                     ).toList();
 
-                return new User(customer.getEmail(), customer.getPwd(), authorities);
+                return new User(userIDMEntity.getEmail(), userIDMEntity.getPwd(), authorities);
 
-        }).orElseThrow(()->new UsernameNotFoundException("User not exist"));
+        }).orElseThrow(()->new UsernameNotFoundException("User not exist in database"));
     }
 
 
