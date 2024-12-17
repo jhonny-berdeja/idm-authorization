@@ -26,7 +26,7 @@ public class ApplicationService {
             return applicationRepository.save(application);
         }catch(Exception e){
             log.error("error when creating the application", e);
-            throw new RuntimeException("error when creating the application", e);
+            throw e;
         }
     }
 
