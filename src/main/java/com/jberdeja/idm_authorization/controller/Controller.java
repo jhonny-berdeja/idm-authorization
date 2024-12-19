@@ -17,7 +17,6 @@ import com.jberdeja.idm_authorization.dto.AccessManagementRequest;
 import com.jberdeja.idm_authorization.dto.AccessManagementResponse;
 import com.jberdeja.idm_authorization.dto.UserIDMRequest;
 import com.jberdeja.idm_authorization.entity.ApplicationEntity;
-import com.jberdeja.idm_authorization.entity.AccessManagementDocumentationEntity;
 import com.jberdeja.idm_authorization.service.ApplicationService;
 import com.jberdeja.idm_authorization.service.AccessManagementDocumentationService;
 import com.jberdeja.idm_authorization.service.UserIDMService;
@@ -70,7 +69,7 @@ public class Controller {
     @GetMapping(path = "/get-application/{app}")
     public ResponseEntity<?> getApplication(@PathVariable String app){
         try{
-            ApplicationEntity applicationEntity =  applicationService.getApplication(app);
+            ApplicationEntity applicationEntity =  applicationService.getApplicationByName(app);
             return ResponseEntity.ok(new ApplicationResponse(applicationEntity));
         }catch(Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());// falta retornar bien el SERVER_ERROR

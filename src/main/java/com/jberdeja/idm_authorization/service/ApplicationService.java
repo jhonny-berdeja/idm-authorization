@@ -1,15 +1,14 @@
 package com.jberdeja.idm_authorization.service;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.jberdeja.idm_authorization.entity.ApplicationEntity;
+import com.jberdeja.idm_authorization.mapper.ApplicationMapper;
 import com.jberdeja.idm_authorization.repository.ApplicationRepository;
+import com.jberdeja.idm_authorization.validator.ApplicacionValidator;
+import com.mongodb.MongoException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -17,72 +16,69 @@ import lombok.extern.slf4j.Slf4j;
 public class ApplicationService {
     @Autowired
     private ApplicationRepository applicationRepository;
+    @Autowired
+    private ApplicacionValidator applicacionValidator;
+    @Autowired
+    private ApplicationMapper applicationMapper;  
 
-    @Transactional
     public ApplicationEntity createApplication(ApplicationEntity application){
-        try{
-            validateApplicationName(application.getName());
-            validateIfExistsApplication(application.getName());
-            return applicationRepository.save(application);
-        }catch(Exception e){
-            log.error("error when creating the application", e);
-            throw e;
-        }
+        applicacionValidator.validateApplicationName(application.getName());
+        applicacionValidator.validateIfExistsApplication(application.getName());
+        return saveApplication(application);
     }
 
-    public ApplicationEntity getApplication(String appName) {
-        try {
-            validateApplicationName(appName);
-            validateIfNotExistsApplication(appName);
-            return applicationRepository.findByName(appName);
-        } catch (Exception e) {
-            log.error("Error getting apps with roles", e);
-            throw new IllegalArgumentException("Error getting apps with roles", e);
-        }
+    public ApplicationEntity getApplicationByName(String appName) {
+        applicacionValidator.validateApplicationName(appName);
+        applicacionValidator.validateIfNotExistsApplication(appName);
+        return findApplicationByName(appName);
     }
 
     public List<String> getApplications(){
+        List<ApplicationEntity> applicationEntities = findApplicationsAll();
+        return applicationMapper.mapToListOfApplicationName(applicationEntities);
+    }
+
+
+    private ApplicationEntity saveApplication(ApplicationEntity applicationEntity){
         try{
-            List<ApplicationEntity> applicationEntities = applicationRepository.findAll();
-            List<String> listOfApplicationName = mapToListOfApplicationName(applicationEntities);
-            return Optional.of(listOfApplicationName).orElseThrow();
+            return executeSaveApplication(applicationEntity);
         }catch(Exception e){
-            log.error("error getting list of application names", e);
-            throw new RuntimeException("error getting list of application names", e);
-        }
-    }
-    private List<String> mapToListOfApplicationName(List<ApplicationEntity> applicationEntities ){
-        var streamOfApplicationName = mapToStreamOfApplicationName(applicationEntities);
-        return streamOfApplicationName.filter(this::isNotValidApplicationName).collect(Collectors.toList());
-    }
-    private Stream<String> mapToStreamOfApplicationName(List<ApplicationEntity> applicationEntities){
-        return applicationEntities.stream().map(ApplicationEntity::getName);
-    }
-
-    private void  validateApplicationName(String appName){
-        if(isValidApplicationName(appName)){
-            log.error("the application name is not valid");
-            throw new IllegalArgumentException("the application name is not valid");
-        }
-    }
-    private boolean isNotValidApplicationName(String appName){
-        return ! isValidApplicationName(appName);
-    }
-    private boolean isValidApplicationName(String appName){
-        return Objects.isNull(appName) || String.valueOf(appName).isBlank();
-    }
-
-    private void validateIfExistsApplication(String applicationName){
-        if(applicationRepository.existsByName(applicationName)){
-            log.error("the application already exists: " + applicationName);
-            throw new IllegalArgumentException("the application already exists: " + applicationName);
+            log.error("error when saving the application in the database", e);
+            throw new MongoException("error when saving the application in the database", e);
         }
     }
 
-    private void validateIfNotExistsApplication(String applicationName){
-        if( ! applicationRepository.existsByName(applicationName)){
-            log.error("there is no application with this name: " + applicationName);
-            throw new IllegalArgumentException("there is no application with this name: " + applicationName);
+    private ApplicationEntity findApplicationByName(String applicationName){
+        try{
+            return executeFindApplicationByName(applicationName);
+        }catch(Exception e){
+            log.error("error when searching for the application by name: " + applicationName, e);
+            throw new MongoException("error when searching for the application by name: " + applicationName, e);
         }
+    }
+
+    private List<ApplicationEntity> findApplicationsAll(){
+        try{
+            return executeFindApplicationsAll();
+        }catch(Exception e){
+            log.error("error searching for all apps", e);
+            throw new MongoException("error searching for all apps", e);
+        }
+    }
+
+    @Transactional
+    private ApplicationEntity executeSaveApplication(ApplicationEntity applicationEntity){
+        return applicationRepository.save(applicationEntity);
+    }
+
+
+    @Transactional
+    private ApplicationEntity executeFindApplicationByName(String applicationName){
+        return applicationRepository.findByName(applicationName);
+    }
+
+    @Transactional
+    private List<ApplicationEntity> executeFindApplicationsAll(){
+        return applicationRepository.findAll();
     }
 }
