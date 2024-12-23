@@ -11,12 +11,9 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
-import lombok.ToString;
-
 @Entity
 @Table(name = "users_idm")
 @Data
-@ToString(exclude = {"roles", "user"})
 public class UserIdmEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
