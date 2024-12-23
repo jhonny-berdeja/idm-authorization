@@ -14,6 +14,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class ApplicationService {
+    // redefinir el manejo de exceptios porque con la general se puerde detalles del error
+    // lo mas comun que se puede lanzar es DataAccessException pero pueden haber otras 
+    // y hay que tner en cuenta para loguear mejor el error;
+    // con esta pregunta chat gpt da mas info
+    //¿es practicamente imposible que ocurra otra exception que no sea DataAccessException?
     @Autowired
     private ApplicationRepository applicationRepository;
     @Autowired
@@ -71,13 +76,10 @@ public class ApplicationService {
         return applicationRepository.save(applicationEntity);
     }
 
-
-    @Transactional
     private ApplicationEntity executeFindApplicationByName(String applicationName){
         return applicationRepository.findByName(applicationName);
     }
 
-    @Transactional
     private List<ApplicationEntity> executeFindApplicationsAll(){
         return applicationRepository.findAll();
     }

@@ -6,13 +6,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import com.jberdeja.idm_authorization.repository.UserIDMRepository;
+import com.jberdeja.idm_authorization.repository.UserIdmRepository;
 import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class UserIDMDetailsService implements UserDetailsService{
-    private final UserIDMRepository userIDMRepository;
+public class UserIdmDetailsService implements UserDetailsService{
+    private final UserIdmRepository userIDMRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -30,6 +30,4 @@ public class UserIDMDetailsService implements UserDetailsService{
 
         }).orElseThrow(()->new UsernameNotFoundException("User not exist in database"));
     }
-
-
 }

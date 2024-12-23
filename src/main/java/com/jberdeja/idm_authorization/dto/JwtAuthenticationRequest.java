@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class JWTAuthenticateRequest {
+public class JwtAuthenticationRequest {
     @NotNull
     private String username;
     @NotNull

@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.jberdeja.idm_authorization.entity.UserIDMEntity;
 
 @Repository
-public interface UserIDMRepository extends CrudRepository<UserIDMEntity, Long>{
+public interface UserIdmRepository extends CrudRepository<UserIDMEntity, Long>{
     Optional<UserIDMEntity> findByEmail(String email);
 }

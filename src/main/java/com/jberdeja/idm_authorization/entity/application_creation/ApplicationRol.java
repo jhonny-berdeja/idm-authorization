@@ -1,4 +1,4 @@
-package com.jberdeja.idm_authorization.entity.creation_application;
+package com.jberdeja.idm_authorization.entity.application_creation;
 
 import java.util.List;
 import lombok.Data;

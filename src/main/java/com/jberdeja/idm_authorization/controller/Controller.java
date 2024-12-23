@@ -18,17 +18,17 @@ import com.jberdeja.idm_authorization.dto.AccessManagementResponse;
 import com.jberdeja.idm_authorization.dto.UserIDMRequest;
 import com.jberdeja.idm_authorization.entity.ApplicationEntity;
 import com.jberdeja.idm_authorization.service.ApplicationService;
-import com.jberdeja.idm_authorization.service.AccessManagementDocumentationService;
-import com.jberdeja.idm_authorization.service.UserIDMService;
+import com.jberdeja.idm_authorization.service.ManagementRecordService;
+import com.jberdeja.idm_authorization.service.UserIdmService;
 
 @RestController
 public class Controller {
     @Autowired
-    private UserIDMService userIDMService;
+    private UserIdmService userIDMService;
     @Autowired
     private ApplicationService applicationService;
     @Autowired
-    private AccessManagementDocumentationService accessManagementDocumentationService;
+    private ManagementRecordService managementRecordService;
 
     @GetMapping(path = "/hello")
     public ResponseEntity<String> hello(){
@@ -79,7 +79,7 @@ public class Controller {
     @PostMapping(path = "/document-access-management")
     public ResponseEntity<?> documentAccessManagement(@Validated @RequestBody AccessManagementRequest request){
         try{
-            var accessManagementDocumentationEntity = accessManagementDocumentationService.document(request.getAccessManagement());
+            var accessManagementDocumentationEntity = managementRecordService.register(request.getAccessManagement());
             return ResponseEntity.ok(new AccessManagementResponse(accessManagementDocumentationEntity));
         }catch(Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

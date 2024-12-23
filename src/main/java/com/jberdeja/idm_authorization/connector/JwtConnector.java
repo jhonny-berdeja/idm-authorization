@@ -6,11 +6,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
-import com.jberdeja.idm_authorization.dto.JWTAuthenticateRequest;
-import com.jberdeja.idm_authorization.dto.JWTResponse;
-
+import com.jberdeja.idm_authorization.dto.JwtAuthenticationRequest;
+import com.jberdeja.idm_authorization.dto.JwtAuthenticationResponse;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -20,49 +19,51 @@ public class JwtConnector {
     private static final String ENDPOINT_GET_ALL_CLAIMS = "/get-all-clams";
     private static final String SLASH = "/";
     @Value("${host.idm-authenticate}")
-    private String hostIDMAuthenticate;
+    private String hostIdmAuthentication;
     @Value("${user.idm-authenticate}")
-    private String userForAuthentication;
+    private String userIdmAuthenticate;
     @Value("${password.idm-authenticate}")
-    private String passwordForAuthenticate;
+    private String passwordIdmAuthenticate;
 
-    public String obtainClaimsOfToken(String pathVariable){
-        try{
-            JWTAuthenticateRequest body = buildBodyForAuthentication();
-            JWTResponse jwtResponse = authenticateForObtainToken(body);
-            return getClaimsOfToken(jwtResponse.getJwt(), pathVariable);
-        }catch(Exception e){
-            log.error("Error when obtaining the token Claims", e);
-            throw new IllegalArgumentException("Error when obtaining the token Claims", e);
-        }
+    public String requestTokenClaims(String tokenForPathVariable){
+        JwtAuthenticationRequest body = buildJwtAuthenticationRequestBody();
+        JwtAuthenticationResponse jwtAuthenticationResponse = requestAuthenticationToken(body);
+        String tokenAuthenticated = jwtAuthenticationResponse.getJwt();
+        return requestTokenClaims(tokenAuthenticated, tokenForPathVariable);
     }
 
-    private JWTAuthenticateRequest buildBodyForAuthentication(){
-        return new JWTAuthenticateRequest(userForAuthentication, passwordForAuthenticate);
+    private JwtAuthenticationRequest buildJwtAuthenticationRequestBody(){
+        return new JwtAuthenticationRequest(userIdmAuthenticate, passwordIdmAuthenticate);
     }
     
-    private JWTResponse authenticateForObtainToken(JWTAuthenticateRequest body){
+    private JwtAuthenticationResponse requestAuthenticationToken(JwtAuthenticationRequest body){
         try{
-            String url = hostIDMAuthenticate + ENDPOINT_AUTHENTICATE;
+            String url = hostIdmAuthentication + ENDPOINT_AUTHENTICATE;
             HttpHeaders headers = buildHttpHeaders();
-            ResponseEntity<JWTResponse> response = executeRequestPost(url, body, headers);
+            ResponseEntity<JwtAuthenticationResponse> response = requestAuthenticationToken(url, body, headers);
             return response.getBody();
-        }catch(Exception e){
+        } catch (RestClientException e) {
             log.error("Error requesting token to idm-authentication", e);
             throw new IllegalArgumentException("Error requesting token to idm-authentication", e);
+        } catch (Exception e) {
+            log.error("Unexpected error requesting token to idm-authentication", e);
+            throw new IllegalArgumentException("Unexpected error requesting token to idm-authentication", e);
         }
     }
 
-    private String getClaimsOfToken(String token, String pathVariable){
+    private String requestTokenClaims(String tokenAuthenticated, String tokenForPathVariable){
         try{
-            String url = hostIDMAuthenticate + ENDPOINT_GET_ALL_CLAIMS + SLASH + pathVariable;
+            String url = hostIdmAuthentication + ENDPOINT_GET_ALL_CLAIMS + SLASH + tokenForPathVariable;
             HttpHeaders headers = buildHttpHeaders();
-            headers.setBearerAuth(token);
-            ResponseEntity<String> response = executeRequestGet(url, headers);
+            headers.setBearerAuth(tokenAuthenticated);
+            ResponseEntity<String> response = requestTokenClaims(url, headers);
             return response.getBody();
-        }catch(Exception e){
-            log.error("Error when requesting claims to idm-authentication.", e);
-            throw new IllegalArgumentException("Error when requesting claims to idm-authentication.", e);
+        }catch (RestClientException e) {
+            log.error("Error requesting claims to idm-authentication", e);
+            throw new IllegalArgumentException("Error requesting token to idm-authentication", e);
+        } catch (Exception e) {
+            log.error("Unexpected error requesting claims to idm-authentication", e);
+            throw new IllegalArgumentException("Unexpected error requesting claims to idm-authentication", e);
         }
     }
 
@@ -72,7 +73,7 @@ public class JwtConnector {
         return headers;
     }
 
-    private ResponseEntity<String> executeRequestGet(String url, HttpHeaders headers){
+    private ResponseEntity<String> requestTokenClaims(String url, HttpHeaders headers){
         HttpEntity<?> requestEntity = new HttpEntity<>(headers);
         RestTemplate restTemplate = new RestTemplate();
         return restTemplate.exchange(
@@ -83,15 +84,15 @@ public class JwtConnector {
         );
     }
 
-    private ResponseEntity<JWTResponse> executeRequestPost(String url, JWTAuthenticateRequest body, HttpHeaders headers){
-        HttpEntity<JWTAuthenticateRequest> requestEntity = new HttpEntity<>(body, headers);
+    private ResponseEntity<JwtAuthenticationResponse> requestAuthenticationToken(String url, JwtAuthenticationRequest body, HttpHeaders headers){
+        HttpEntity<JwtAuthenticationRequest> requestEntity = new HttpEntity<>(body, headers);
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<JWTResponse> response = restTemplate.exchange(
+        return restTemplate.exchange(
                 url,
                 HttpMethod.POST,
                 requestEntity,
-                JWTResponse.class
+                JwtAuthenticationResponse.class
         );
-        return response;
+        
     }
 }

@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class JWTRequest {
+public class JwtRequest {
     @NotBlank
     private String jwt;
 }

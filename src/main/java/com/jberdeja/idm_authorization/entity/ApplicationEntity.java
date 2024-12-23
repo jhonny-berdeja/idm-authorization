@@ -4,7 +4,9 @@ import java.util.List;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import com.jberdeja.idm_authorization.entity.creation_application.ApplicationRol;
+
+import com.jberdeja.idm_authorization.entity.application_creation.ApplicationRol;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 

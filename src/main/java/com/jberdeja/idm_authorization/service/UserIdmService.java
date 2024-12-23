@@ -10,14 +10,14 @@ import com.jberdeja.idm_authorization.dto.UserIDMRequest;
 import com.jberdeja.idm_authorization.entity.RoleIDMEntity;
 import com.jberdeja.idm_authorization.entity.UserIDMEntity;
 import com.jberdeja.idm_authorization.repository.RoleIDMRepository;
-import com.jberdeja.idm_authorization.repository.UserIDMRepository;
+import com.jberdeja.idm_authorization.repository.UserIdmRepository;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-public class UserIDMService {
+public class UserIdmService {
     @Autowired
-    private UserIDMRepository userIDMRepository;
+    private UserIdmRepository userIDMRepository;
     @Autowired
     private RoleIDMRepository roleIDMRepository;
 

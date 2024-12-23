@@ -1,4 +1,4 @@
-package com.jberdeja.idm_authorization.security;
+package com.jberdeja.idm_authorization.security.filter;
 
 import java.io.IOException;
 import java.util.Objects;
