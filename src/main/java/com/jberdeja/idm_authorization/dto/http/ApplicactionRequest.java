@@ -1,4 +1,4 @@
-package com.jberdeja.idm_authorization.dto;
+package com.jberdeja.idm_authorization.dto.http;
 
 import com.jberdeja.idm_authorization.entity.ApplicationEntity;
 import jakarta.validation.constraints.NotNull;

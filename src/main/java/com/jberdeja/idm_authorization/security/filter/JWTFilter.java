@@ -5,11 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import com.jberdeja.idm_authorization.dto.JwtValidatorResult;
+import com.jberdeja.idm_authorization.dto.validator_result.JwtValidatorResult;
 import com.jberdeja.idm_authorization.processor.HeaderProcessor;
 import com.jberdeja.idm_authorization.processor.HttpServletRequestProcessor;
 import com.jberdeja.idm_authorization.processor.SecurityContextHolderProcessor;
-import com.jberdeja.idm_authorization.validator.JWTValidator;
+import com.jberdeja.idm_authorization.validator.JwtValidator;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +24,7 @@ public class JWTFilter extends OncePerRequestFilter{
     private static final String URL_HELLO = "http://localhost/hello";
 
     @Autowired
-    private JWTValidator jwtValidator;
+    private JwtValidator jwtValidator;
     @Autowired
     private HttpServletRequestProcessor httpServletRequestService;
     @Autowired

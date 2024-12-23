@@ -2,14 +2,13 @@ package com.jberdeja.idm_authorization.entity;
 
 import java.util.Date;
 import java.util.List;
-
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import com.jberdeja.idm_authorization.entity.management_record.Application;
+import com.jberdeja.idm_authorization.entity.management_record.Status;
+import com.jberdeja.idm_authorization.entity.management_record.User;
 
-import com.jberdeja.idm_authorization.entity.management_documentation.Application;
-import com.jberdeja.idm_authorization.entity.management_documentation.Status;
-import com.jberdeja.idm_authorization.entity.management_documentation.User;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

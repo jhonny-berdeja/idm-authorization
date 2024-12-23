@@ -1,4 +1,4 @@
-package com.jberdeja.idm_authorization.dto;
+package com.jberdeja.idm_authorization.dto.http;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

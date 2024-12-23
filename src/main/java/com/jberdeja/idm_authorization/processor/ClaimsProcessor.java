@@ -1,23 +1,17 @@
 package com.jberdeja.idm_authorization.processor;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.Objects;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jberdeja.idm_authorization.connector.JwtConnector;
 import com.jberdeja.idm_authorization.mapper.ClaimsMapper;
-import com.jberdeja.idm_authorization.validator.JWTValidator;
-
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-public class TokenProcessor {
+public class ClaimsProcessor {
     @Autowired
     private JwtConnector jwtConnector;
     @Autowired

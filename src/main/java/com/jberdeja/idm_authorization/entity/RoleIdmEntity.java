@@ -18,7 +18,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString(exclude = {"users"})
-public class RoleIDMEntity {
+public class RoleIdmEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,9 +28,9 @@ public class RoleIDMEntity {
     private String description;
 
     @ManyToMany(mappedBy = "roles")
-    private List<UserIDMEntity> users;
+    private List<UserIdmEntity> users;
 
-    public RoleIDMEntity (String roleName, String description){
+    public RoleIdmEntity (String roleName, String description){
         this.roleName = roleName;
         this.description = description;
     }

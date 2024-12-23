@@ -1,13 +1,10 @@
 package com.jberdeja.idm_authorization.validator;
 
 import java.util.Objects;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import com.jberdeja.idm_authorization.repository.ApplicationRepository;
 import com.mongodb.MongoException;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

@@ -38,6 +38,8 @@ public class SecurityConfig {
     private static final String ROUTE_HELLO = "/hello";
     private static final String POST = "post";
     private static final String GET = "get";
+    private static final String STRING_NULL = null;
+
     @Autowired
     CsrfCookieFilter csrfCookieFilter;
 
@@ -125,10 +127,17 @@ public class SecurityConfig {
 
     @SuppressWarnings("rawtypes")
     private CsrfConfigurer csrfConfigurer(CsrfConfigurer<HttpSecurity> httpSecurity){
+
         httpSecurity.csrfTokenRepository(withHttpOnlyTrue());
-        httpSecurity.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler());
+        httpSecurity.csrfTokenRequestHandler(configureCsrfTokenCreationForPerRequest());
         httpSecurity.ignoringRequestMatchers(ROUTE_HELLO);
         return httpSecurity;
+    }
+
+    private CsrfTokenRequestAttributeHandler configureCsrfTokenCreationForPerRequest(){
+        CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
+        csrfTokenRequestAttributeHandler.setCsrfRequestAttributeName(STRING_NULL);
+        return csrfTokenRequestAttributeHandler;
     }
 
     @SuppressWarnings("deprecation")

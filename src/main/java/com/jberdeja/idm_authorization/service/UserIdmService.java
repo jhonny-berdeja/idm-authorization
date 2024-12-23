@@ -6,52 +6,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.jberdeja.idm_authorization.dto.UserIDMRequest;
-import com.jberdeja.idm_authorization.entity.RoleIDMEntity;
-import com.jberdeja.idm_authorization.entity.UserIDMEntity;
-import com.jberdeja.idm_authorization.repository.RoleIDMRepository;
-import com.jberdeja.idm_authorization.repository.UserIdmRepository;
+import com.jberdeja.idm_authorization.dto.common.UserIdm;
+import com.jberdeja.idm_authorization.dto.http.UserIdmRequest;
+import com.jberdeja.idm_authorization.entity.RoleIdmEntity;
+import com.jberdeja.idm_authorization.entity.UserIdmEntity;
+import com.jberdeja.idm_authorization.executor.UserIdmRepositoryExecutor;
+import com.jberdeja.idm_authorization.mapper.UserMapper;
+import com.jberdeja.idm_authorization.repository.RoleIdmRepository;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 public class UserIdmService {
     @Autowired
-    private UserIdmRepository userIDMRepository;
+    private UserIdmRepositoryExecutor userIdmRepositoryExecutor;
     @Autowired
-    private RoleIDMRepository roleIDMRepository;
+    private UserMapper userMapper;
 
-    @Transactional
-    public void createUser(UserIDMRequest userIDMRequest) {
-        log.info("Inizilice creation user: " + userIDMRequest);
-        UserIDMEntity userIDMEntity = userIDMEntityMapper(userIDMRequest);
-        userIDMRepository.save(userIDMEntity);
-        log.info("User created ok");
-    }
-        
-    private UserIDMEntity userIDMEntityMapper(UserIDMRequest userIDMRequest) {
-        List<RoleIDMEntity> roles = userIDMRequest.getRoles().stream()
-                                    .map(this::buildRoleIDMEntity) 
-                                    .collect(Collectors.toList()); 
-
-        UserIDMEntity user = buildUserIDMEntity(userIDMRequest, roles);
-        log.info("User to create ok ");
-        return user;
-    }
-
-    private UserIDMEntity buildUserIDMEntity(UserIDMRequest userIDMRequest, List<RoleIDMEntity> roles){
-        UserIDMEntity user = new UserIDMEntity();
-        user.setEmail(userIDMRequest.getEmail());
-        user.setPwd(userIDMRequest.getPassword());
-        user.setRoles(roles);
-        return user;
-    }
-    
-    private RoleIDMEntity buildRoleIDMEntity(String roleName) {
-        RoleIDMEntity roleEntity = roleIDMRepository.findByRoleName(roleName)
-            .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
-        log.info("Roles of database: " + roleEntity);
-        return roleEntity;
+    public void createUser(UserIdm userIdm ) {
+        log.info("starting user creation: " + userIdm.getEmail());
+        UserIdmEntity userIdmEntity = userMapper.mapToUserIdmEntity(userIdm);
+        userIdmRepositoryExecutor.save(userIdmEntity);
+        log.info("user created successfully");
     }
 
 }

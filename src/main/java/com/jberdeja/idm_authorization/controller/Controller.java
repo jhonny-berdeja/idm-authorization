@@ -10,12 +10,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import com.jberdeja.idm_authorization.dto.ApplicactionRequest;
-import com.jberdeja.idm_authorization.dto.ApplicationResponse;
-import com.jberdeja.idm_authorization.dto.ApplicationsResponse;
-import com.jberdeja.idm_authorization.dto.AccessManagementRequest;
-import com.jberdeja.idm_authorization.dto.AccessManagementResponse;
-import com.jberdeja.idm_authorization.dto.UserIDMRequest;
+
+import com.jberdeja.idm_authorization.dto.common.UserIdm;
+import com.jberdeja.idm_authorization.dto.http.AccessManagementRequest;
+import com.jberdeja.idm_authorization.dto.http.AccessManagementResponse;
+import com.jberdeja.idm_authorization.dto.http.ApplicactionRequest;
+import com.jberdeja.idm_authorization.dto.http.ApplicationResponse;
+import com.jberdeja.idm_authorization.dto.http.ApplicationsResponse;
+import com.jberdeja.idm_authorization.dto.http.UserIdmRequest;
 import com.jberdeja.idm_authorization.entity.ApplicationEntity;
 import com.jberdeja.idm_authorization.service.ApplicationService;
 import com.jberdeja.idm_authorization.service.ManagementRecordService;
@@ -24,7 +26,7 @@ import com.jberdeja.idm_authorization.service.UserIdmService;
 @RestController
 public class Controller {
     @Autowired
-    private UserIdmService userIDMService;
+    private UserIdmService userIdmService;
     @Autowired
     private ApplicationService applicationService;
     @Autowired
@@ -36,9 +38,10 @@ public class Controller {
     }
 
     @PostMapping(path = "/create-user")
-    public ResponseEntity<String> createUser(@Validated @RequestBody UserIDMRequest request) {
+    public ResponseEntity<String> createUser(@Validated @RequestBody UserIdmRequest request) {
         try{
-            userIDMService.createUser(request);
+            UserIdm userIdm = request.getUserIdm();
+            userIdmService.createUser(userIdm);
             return ResponseEntity.ok("User created successfully");
         }catch(Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());// falta retornar bien el SERVER_ERROR
@@ -79,8 +82,8 @@ public class Controller {
     @PostMapping(path = "/document-access-management")
     public ResponseEntity<?> documentAccessManagement(@Validated @RequestBody AccessManagementRequest request){
         try{
-            var accessManagementDocumentationEntity = managementRecordService.register(request.getAccessManagement());
-            return ResponseEntity.ok(new AccessManagementResponse(accessManagementDocumentationEntity));
+            var managementRecordEntity = managementRecordService.register(request.getAccessManagement());
+            return ResponseEntity.ok(new AccessManagementResponse(managementRecordEntity));
         }catch(Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

@@ -17,7 +17,7 @@ import lombok.ToString;
 @Table(name = "users_idm")
 @Data
 @ToString(exclude = {"roles", "user"})
-public class UserIDMEntity {
+public class UserIdmEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,5 +32,5 @@ public class UserIDMEntity {
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private List<RoleIDMEntity> roles;
+    private List<RoleIdmEntity> roles;
 }

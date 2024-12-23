@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.jberdeja.idm_authorization.entity.ManagementRecordEntity;
 import com.jberdeja.idm_authorization.entity.RosterEntity;
-import com.jberdeja.idm_authorization.entity.management_documentation.Status;
-import com.jberdeja.idm_authorization.entity.management_documentation.User;
+import com.jberdeja.idm_authorization.entity.management_record.Status;
+import com.jberdeja.idm_authorization.entity.management_record.User;
 import com.jberdeja.idm_authorization.entity.management_request.AccessManagement;
-import com.jberdeja.idm_authorization.repository.ManagementRecordRepository;
-import com.jberdeja.idm_authorization.repository.RosterRepository;
+import com.jberdeja.idm_authorization.executor.ManagementRecordRepositoryExecutor;
+import com.jberdeja.idm_authorization.executor.RosterRepositoryExecutor;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,9 +25,9 @@ public class ManagementRecordMapper {
     private static final List<String> FOLLOWING_POSSIBLES_STATES = List.of("APPROVED", "REJECTED", "CLOSED");
 
     @Autowired
-    private ManagementRecordRepository managementRecordRepository;
+    private ManagementRecordRepositoryExecutor managementRecordRepositoryExecutor;
     @Autowired
-    private RosterRepository rosterRepository;
+    private RosterRepositoryExecutor rosterRepositoryExecutor;
 
     public ManagementRecordEntity mapToManagementRecordEntity(AccessManagement accessManagement){
         var managementRecordEntity = new ManagementRecordEntity();
@@ -61,13 +61,13 @@ public class ManagementRecordMapper {
 
     private Integer buildNewIdentifierNumber(){
         //tener en cuenta para aplicar concurrencia para poder obtener realmete el nuevo numero
-        var managementRecordEntityWithLastCreationDate = managementRecordRepository.findFirstByOrderByManagementRecordCreationDateDesc();
+        var managementRecordEntityWithLastCreationDate = findFirstByOrderByManagementRecordEntityCreationDateDesc();
         if (doesNotExistsAnyManagementRecord(managementRecordEntityWithLastCreationDate)) return UNO;
         return managementRecordEntityWithLastCreationDate.getIdentifierNumber() + UNO;
     }
 
     private User buildManagementRecordCreator(String accessManagementRequesterEmail){
-        RosterEntity roster = getRosterByEmail(accessManagementRequesterEmail);
+        RosterEntity roster = getRosterEntityByEmail(accessManagementRequesterEmail);
         User managementRecordCreatorUser = new User();
         managementRecordCreatorUser.setEmail(accessManagementRequesterEmail);
         managementRecordCreatorUser.setNames(roster.getName());
@@ -77,7 +77,7 @@ public class ManagementRecordMapper {
     }
 
     private User buildAccessManagementFor(String AccessManagementForUserEmail){
-        RosterEntity roster = getRosterByEmail(AccessManagementForUserEmail);
+        RosterEntity roster = getRosterEntityByEmail(AccessManagementForUserEmail);
         User accessManagementForUser = new User();
         accessManagementForUser.setEmail(AccessManagementForUserEmail);
         accessManagementForUser.setNames(roster.getName());
@@ -106,17 +106,20 @@ public class ManagementRecordMapper {
                 && managementRecordEntityWithLastCreationDate.getIdentifierNumber() >= UNO;
     }
 
-    private RosterEntity getRosterByEmail(String email) {
-        return rosterRepository.findByEmail(email)
-            .orElseThrow(() -> new EntityNotFoundException("No roster was found with the email: " + email));
+    private RosterEntity getRosterEntityByEmail(String email) {
+        return rosterRepositoryExecutor.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("No roster was found with the email: " + email));
     }
-
+    
     private User completTransitioner(String accessManagementRequesterEmail){
-        RosterEntity roster = getRosterByEmail(accessManagementRequesterEmail);
+        RosterEntity roster = getRosterEntityByEmail(accessManagementRequesterEmail);
         User user = new User();
         user.setNames(roster.getName());
         user.setLastnames(roster.getLastname());
         user.setUserPrincipalName(roster.getUserPrincipalName());
         return user;
+    }
+
+    private ManagementRecordEntity findFirstByOrderByManagementRecordEntityCreationDateDesc(){
+        return managementRecordRepositoryExecutor.findFirstByOrderByManagementRecordEntityCreationDateDesc();
     }
 }

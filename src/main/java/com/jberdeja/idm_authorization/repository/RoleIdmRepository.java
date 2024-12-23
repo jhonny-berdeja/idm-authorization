@@ -1,11 +1,11 @@
 package com.jberdeja.idm_authorization.repository;
+
 import java.util.Optional;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-
-import com.jberdeja.idm_authorization.entity.RoleIDMEntity;
+import com.jberdeja.idm_authorization.entity.RoleIdmEntity;
 
 @Repository
-public interface RoleIDMRepository extends CrudRepository<RoleIDMEntity, Long>{
-    Optional<RoleIDMEntity> findByRoleName(String roleName);
+public interface RoleIdmRepository extends CrudRepository<RoleIdmEntity, Long>{
+    Optional<RoleIdmEntity> findByRoleName(String roleName);
 }

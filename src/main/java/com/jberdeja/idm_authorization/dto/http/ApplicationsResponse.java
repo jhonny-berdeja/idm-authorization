@@ -1,4 +1,4 @@
-package com.jberdeja.idm_authorization.dto;
+package com.jberdeja.idm_authorization.dto.http;
 
 import java.util.List;
 
@@ -8,5 +8,5 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ApplicationsResponse {
-    private List<String> applications;
+    private List<String> applicationNames;
 }

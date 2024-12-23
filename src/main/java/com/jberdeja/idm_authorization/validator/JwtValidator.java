@@ -1,23 +1,22 @@
 package com.jberdeja.idm_authorization.validator;
 
-import java.util.Objects;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import com.jberdeja.idm_authorization.dto.JwtValidatorResult;
-import com.jberdeja.idm_authorization.processor.TokenProcessor;
+
+import com.jberdeja.idm_authorization.dto.validator_result.JwtValidatorResult;
+import com.jberdeja.idm_authorization.processor.ClaimsProcessor;
 import com.jberdeja.idm_authorization.service.UserIdmDetailsService;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-public class JWTValidator {
+public class JwtValidator {
  @Autowired
     private UserIdmDetailsService userIDMDetailsService;
     @Autowired
-    private TokenProcessor tokenProcessor;
+    private ClaimsProcessor tokenProcessor;
     
     public JwtValidatorResult validateIfTokenIsOfAuthenticatedUser(String headerAuthorizationValue){
         try {
@@ -51,24 +50,4 @@ public class JWTValidator {
     private boolean isTokenOwnedByAuthenticatedUser(String usernameFromToken, String usernameFromDatabase){
         return usernameFromToken.equalsIgnoreCase(usernameFromDatabase);
     }
-
-/*     public void validateUsernamen(String username){
-        if(isUsernameInvalid(username)){
-            log.error("the username is not valid because it is null or blank");
-            throw new IllegalArgumentException("the username is not valid because it is null or blank");
-        }
-    }
-    
-    private boolean isUsernameInvalid(String username){
-        return ! isUsernameValid(username);
-    }
-
-    private boolean isUsernameValid(String username){
-        return Objects.nonNull(username) && isNotBlackUsername(username);
-    }
-
-    private boolean isNotBlackUsername(String username){
-        return ! username.isBlank();
-    } */
-
 }

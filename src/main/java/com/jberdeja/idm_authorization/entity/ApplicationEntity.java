@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.jberdeja.idm_authorization.entity.application_creation.ApplicationRol;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -14,14 +15,16 @@ import lombok.Data;
 @Data
 @Document(collection = "applications")
 public class ApplicationEntity {
-
         @Id
         private ObjectId id;
         @NotNull
+        @NotBlank
         private String name;
         @NotNull
+        @NotBlank
         private String description;
         @NotNull
+        @NotBlank
         private List<ApplicationRol> roles;
 
         public ApplicationEntity(String name, String description, List<ApplicationRol> roles) {

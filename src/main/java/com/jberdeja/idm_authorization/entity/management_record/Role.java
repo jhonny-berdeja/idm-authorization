@@ -1,4 +1,4 @@
-package com.jberdeja.idm_authorization.entity.management_documentation;
+package com.jberdeja.idm_authorization.entity.management_record;
 
 import java.util.List;
 import lombok.Data;
