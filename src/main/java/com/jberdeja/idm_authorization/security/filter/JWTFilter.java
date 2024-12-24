@@ -6,10 +6,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import com.jberdeja.idm_authorization.dto.validator_result.JwtValidatorResult;
-import com.jberdeja.idm_authorization.processor.HeaderProcessor;
 import com.jberdeja.idm_authorization.processor.HttpServletRequestProcessor;
+import com.jberdeja.idm_authorization.processor.JwtProcessor;
 import com.jberdeja.idm_authorization.processor.SecurityContextHolderProcessor;
-import com.jberdeja.idm_authorization.validator.JwtValidator;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,51 +20,67 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 @Slf4j
 public class JWTFilter extends OncePerRequestFilter{
-    private static final String URL_HELLO = "http://localhost/hello";
 
     @Autowired
-    private JwtValidator jwtValidator;
+    private HttpServletRequestProcessor httpServletRequestProcessor;
     @Autowired
-    private HttpServletRequestProcessor httpServletRequestService;
+    private SecurityContextHolderProcessor securityContextHolderProcessor;
     @Autowired
-    private HeaderProcessor headerService;
-    @Autowired
-    private SecurityContextHolderProcessor securityContextHolderService;
+    private JwtProcessor jwtProcessor;
 
     @SuppressWarnings("null")
     @Override
     protected void doFilterInternal(
-                                    HttpServletRequest request
-                                    , HttpServletResponse response
-                                    , FilterChain filterChain) throws ServletException, IOException {
-        String requestURL = httpServletRequestService.obtainRequestURL(request);
-        if(itIsNecessaryToValidate(requestURL)) applyValidations(request);
+        HttpServletRequest request,
+        HttpServletResponse response,
+        FilterChain filterChain
+        ) throws ServletException, IOException {
+
+        String url = obtainRequestURL(request);
+
+        if (isValidationRequired(url)) {
+            applyValidations(request);
+        }
+
         filterChain.doFilter(request, response);
     }
 
-    private void applyValidations(HttpServletRequest request){
-        String headerAuthorizationValue = httpServletRequestService.getHeaderAuthorizationValue(request);
-        headerService.validateHeaderAuthorizationValue(headerAuthorizationValue);
-        JwtValidatorResult jwtValidatorResult = jwtValidator.validateIfTokenIsOfAuthenticatedUser(headerAuthorizationValue);
-        UserDetails userDetailsOfDatabase = jwtValidatorResult.getUserDetailsOfDatabase();
-        securityContextHolderService.validateAuthenticationInCurrentThreadContext();
-        securityContextHolderService.addAuthenticationToTheCurrentThreadContext(userDetailsOfDatabase, request);
+    private String obtainRequestURL(HttpServletRequest request) {
+        return httpServletRequestProcessor.obtainRequestURL(request);
     }
 
-    private boolean itIsNecessaryToValidate(String requestURL){
-        return ! itNotNecessaryToValidate(requestURL);
+    private void applyValidations(HttpServletRequest request) {
+        String authorization = getHeaderAuthorization(request);
+        validateAuthorizationHeader(authorization);
+        
+        JwtValidatorResult jwtResult = validateToken(authorization);
+        UserDetails userDetails = jwtResult.getDatabaseUserDetails();
+        
+        validateSecurityContext();
+        setAuthenticationToContext(userDetails, request);
     }
 
-    private boolean itNotNecessaryToValidate(String requestURL){
-        return isLocalOrDevelopmentEnvironment() && isURLFree(requestURL);
+    private String getHeaderAuthorization(HttpServletRequest request) {
+        return httpServletRequestProcessor.getHeaderAuthorization(request);
     }
-
-    private boolean isLocalOrDevelopmentEnvironment(){
-        // TODO Implementar este metodo
-        return Boolean.TRUE;
+    
+    private void validateAuthorizationHeader(String authHeader) {
+        httpServletRequestProcessor.validateHeaderAuthorization(authHeader);
     }
-
-    private boolean isURLFree(String requestURL){
-        return URL_HELLO.equalsIgnoreCase(requestURL);
+    
+    private JwtValidatorResult validateToken(String authorization) {
+        return jwtProcessor.validateTokenBelongsToAuthenticatedUser(authorization);
+    }
+    
+    private void validateSecurityContext() {
+        securityContextHolderProcessor.validateAuthenticationInCurrentThreadContext();
+    }
+    
+    private void setAuthenticationToContext(UserDetails userDetails, HttpServletRequest request) {
+        securityContextHolderProcessor.addAuthenticationToTheCurrentThreadContext(userDetails, request);
+    }
+    
+    private boolean isValidationRequired(String requestURL){
+        return httpServletRequestProcessor.isValidationRequired(requestURL);
     }
 }

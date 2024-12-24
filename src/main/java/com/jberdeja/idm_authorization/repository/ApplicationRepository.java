@@ -8,4 +8,7 @@ import com.jberdeja.idm_authorization.entity.ApplicationEntity;
 public interface ApplicationRepository extends MongoRepository<ApplicationEntity, Long>{
      ApplicationEntity findByName(String name);
      boolean existsByName(String name); 
+     default boolean doesNotExistByName(String name) {
+          return ! existsByName(name);
+      }
 }

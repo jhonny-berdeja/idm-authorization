@@ -52,6 +52,30 @@ public class ApplicationRepositoryExecutor {
         }
     }
 
+    public boolean existsByName(String applicationName){
+        try{
+            return applicationRepository.existsByName(applicationName);
+        }catch (DataAccessException e) {
+            log.error("error when querying the existence of the application by name: " + applicationName, e);
+            throw new MongoDatabaseIdmException("error when querying the existence of the application by name: " + applicationName, e);
+        }catch (Exception e) {
+            log.error("Unexpected error when querying the existence of the application by name: " + applicationName, e);
+            throw new MongoDatabaseIdmException("Unexpected error when querying the existence of the application by name: " + applicationName, e);
+        }
+    }
+
+    public boolean doesNotExistByName(String applicationName){
+        try{
+            return applicationRepository.doesNotExistByName(applicationName);
+        }catch (DataAccessException e) {
+            log.error("error when querying the non-existence of the application by name: " + applicationName, e);
+            throw new MongoDatabaseIdmException("error when querying the non-existence of the application by name: " + applicationName, e);
+        }catch (Exception e) {
+            log.error("Unexpected error when querying non-existence of application by name: " + applicationName, e);
+            throw new MongoDatabaseIdmException("Unexpected error when querying non-existence of application by name: " + applicationName, e);
+        }
+    }
+
     @Transactional
     private ApplicationEntity saveApplication(ApplicationEntity applicationEntity) {
         return applicationRepository.save(applicationEntity);

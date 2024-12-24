@@ -1,11 +1,10 @@
 package com.jberdeja.idm_authorization.processor;
 
-import java.util.Date;
-import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.jberdeja.idm_authorization.connector.JwtConnector;
 import com.jberdeja.idm_authorization.mapper.ClaimsMapper;
+import com.jberdeja.idm_authorization.validator.ClaimsValidator;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,51 +14,35 @@ public class ClaimsProcessor {
     @Autowired
     private JwtConnector jwtConnector;
     @Autowired
-    private HeaderProcessor headerService;
+    private HeaderProcessor headerProcessor;
     @Autowired
     private ClaimsMapper claimsMapper;
+    @Autowired
+    private ClaimsValidator claimsValidator;
 
-    public Claims getTokenClaimsFromAuthorizationHeaderValue(String headerAuthorizationValue){
-        String headerAuthorizationValueToken = headerService.getAuthorizationValueTokenFromRequestHeader(headerAuthorizationValue);
-        Claims headerAuthorizationValueTokenClaims = requestClaimsFromAuthorizationHeaderToken(headerAuthorizationValueToken);
-        validateIfClaimsIsFromAnExpiredToken(headerAuthorizationValueTokenClaims);
-        return headerAuthorizationValueTokenClaims;
+    public Claims getTokenClaims(String headerAuthorization){
+        String token = headerProcessor.getHeaderAuthorizationToken(headerAuthorization);
+        Claims claims = requestTokenClaims(token);
+        validateClaimsExpiration(claims);
+        return claims;
     }
 
-    public String getUsernameFromTokenClaims(Claims headerAuthorizationValueTokenClaims){
-        String headerAuthorizationValueTokenClaimsUsername = headerAuthorizationValueTokenClaims.getSubject();
-        validateUsernamen(headerAuthorizationValueTokenClaimsUsername);
-        return headerAuthorizationValueTokenClaimsUsername;
+    public String getClaimsUsername(Claims claims){
+        String username = claims.getSubject();
+        validateUsernamen(username);
+        return username;
     }
 
-    private Claims requestClaimsFromAuthorizationHeaderToken(String headerAuthorizationValueToken){
-        String claims = jwtConnector.requestTokenClaims(headerAuthorizationValueToken);
+    private Claims requestTokenClaims(String token){
+        String claims = jwtConnector.requestTokenClaims(token);
         return claimsMapper.mapToClaimsObject(claims);
     }
 
-    public void validateIfClaimsIsFromAnExpiredToken(Claims tokenClaims){
-        if(tokenClaims.getExpiration().before(new Date())){
-            log.error("error, the claims are from an expired token");
-            throw new IllegalArgumentException("error, the claims are from an expired token");
-        }
+    public void validateClaimsExpiration(Claims claims){
+        claimsValidator.validateClaimsExpiration(claims);
     }
 
-    public void validateUsernamen(String username){
-        if(isUsernameInvalid(username)){
-            log.error("the username is not valid because it is null or blank");
-            throw new IllegalArgumentException("the username is not valid because it is null or blank");
-        }
-    }
-    
-    private boolean isUsernameInvalid(String username){
-        return ! isUsernameValid(username);
-    }
-
-    private boolean isUsernameValid(String username){
-        return Objects.nonNull(username) && isNotBlackUsername(username);
-    }
-
-    private boolean isNotBlackUsername(String username){
-        return ! username.isBlank();
+     public void validateUsernamen(String username){
+        claimsValidator.validateUsernamen(username);
     }
 }

@@ -27,18 +27,18 @@ public class CsrfCookieFilter extends OncePerRequestFilter{
                                     HttpServletResponse response,
                                     FilterChain filterChain) 
                                     throws ServletException, IOException{                 
-        CsrfToken csrfToken = getCsrfTokenFromHeader(request);                    
-        validateHeaderCsrfToken(csrfToken);
+        CsrfToken csrfToken = getHeaderCsrfToken(request);                    
+        validateCsrfToken(csrfToken);
         addCsrfTokenToResponseHeaderForNextRequest(response, csrfToken);
         filterChain.doFilter(request, response);                
     }
 
-    private CsrfToken getCsrfTokenFromHeader(HttpServletRequest request){
-        return httpServletRequestProcessor.getCsrfTokenFromHeader(request);   
+    private CsrfToken getHeaderCsrfToken(HttpServletRequest request){
+        return httpServletRequestProcessor.getHeaderCsrfToken(request);   
     }
 
-    private void validateHeaderCsrfToken(CsrfToken csrfToken ){
-        headerProcessor.validateHeaderCsrfToken(csrfToken);
+    private void validateCsrfToken(CsrfToken csrfToken ){
+        headerProcessor.validateCsrfToken(csrfToken);
     }
 
     private void addCsrfTokenToResponseHeaderForNextRequest(HttpServletResponse response, CsrfToken csrfToken){

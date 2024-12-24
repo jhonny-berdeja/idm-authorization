@@ -1,8 +1,8 @@
 package com.jberdeja.idm_authorization.processor;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Service;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -10,11 +10,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class HttpServletRequestProcessor {
-    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String HEADER_AUTHORIZATION = "Authorization";
+    private static final String URL_HELLO = "http://localhost/hello";
 
-    public String getHeaderAuthorizationValue(HttpServletRequest request){
+    @Autowired
+    private HeaderProcessor headerProcessor;
+
+    public String getHeaderAuthorization(HttpServletRequest request){
         try{
-            return request.getHeader(AUTHORIZATION_HEADER); 
+            return request.getHeader(HEADER_AUTHORIZATION); 
         }catch(Exception e){
             log.error("error, getting authorization value from header", e);
             throw new IllegalArgumentException("error, getting authorization value from header", e);
@@ -30,7 +34,11 @@ public class HttpServletRequestProcessor {
         }
     }
 
-    public CsrfToken getCsrfTokenFromHeader(HttpServletRequest request){
+    public void addCsrfTokenToResponseHeaderForNextRequest(HttpServletResponse response, CsrfToken csrfToken){
+        response.setHeader(csrfToken.getHeaderName(), csrfToken.getToken());
+    }
+
+    public CsrfToken getHeaderCsrfToken(HttpServletRequest request){
         try{
             return (CsrfToken)request.getAttribute(CsrfToken.class.getName());   
         }catch(Exception e){
@@ -39,8 +47,29 @@ public class HttpServletRequestProcessor {
         }
     }
 
-    public void addCsrfTokenToResponseHeaderForNextRequest(HttpServletResponse response, CsrfToken csrfToken){
-        response.setHeader(csrfToken.getHeaderName(), csrfToken.getToken());
+    public void validateHeaderAuthorization(String authHeader) {
+        headerProcessor.validateHeaderAuthorization(authHeader);
+    }
+
+    public boolean isValidationRequired(String requestURL){
+        return ! isNotValidationRequired(requestURL);
+    }
+
+    private boolean isNotValidationRequired(String url){
+        return isLocalOrDevelopmentEnvironment() && isURLFree(url);
+    }
+
+    private boolean isLocalOrDevelopmentEnvironment(){
+        // TODO Implementar este metodo
+        // TODO Implementar este metodo
+        // TODO Implementar este metodo
+        // TODO Implementar este metodo
+        // TODO Implementar este metodo
+        return Boolean.TRUE;
+    }
+
+    private boolean isURLFree(String url){
+        return URL_HELLO.equalsIgnoreCase(url);
     }
 
 }

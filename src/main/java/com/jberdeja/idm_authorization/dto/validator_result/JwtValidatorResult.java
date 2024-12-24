@@ -7,5 +7,5 @@ import lombok.Data;
 @AllArgsConstructor
 @Data
 public class JwtValidatorResult {
-    private UserDetails userDetailsOfDatabase;
+    private UserDetails databaseUserDetails;
 }
