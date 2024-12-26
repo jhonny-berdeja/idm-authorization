@@ -3,7 +3,6 @@ package com.jberdeja.idm_authorization.mapper;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.springframework.data.mapping.MappingException;
 import org.springframework.stereotype.Component;
 import com.jberdeja.idm_authorization.entity.ApplicationEntity;
 import com.jberdeja.idm_authorization.utility.Utility;

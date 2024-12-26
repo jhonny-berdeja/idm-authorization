@@ -1,4 +1,5 @@
 package com.jberdeja.idm_authorization.security.config;
+
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +23,6 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
 import com.jberdeja.idm_authorization.security.filter.CsrfCookieFilter;
 import com.jberdeja.idm_authorization.security.filter.JWTFilter;
 
@@ -43,18 +43,26 @@ public class SecurityConfig {
     @Autowired
     CsrfCookieFilter csrfCookieFilter;
 
+/*     Razones para este orden
+    1) sessionManagement primero: Asegura que la configuración de la sesión esté establecida antes de que otros filtros la usen.
+    2) cors temprano: Garantiza que las solicitudes de origen cruzado sean procesadas correctamente antes de ejecutar los filtros personalizados.
+    3) csrf básico antes de los filtros personalizados: Configura las políticas de CSRF antes de manejar los tokens relacionados.
+    4) jwtFilter antes de otros filtros: Valida el token JWT y configura el contexto de seguridad para que otros filtros y configuraciones puedan depender de ello.
+    5) csrfCookieFilter después de jwtFilter: Garantiza que el token CSRF se maneje después de que el SecurityContext haya sido configurado.
+    6) authorizeHttpRequests al final: Define las reglas de autorización después de que todos los filtros hayan procesado la solicitud.
+*/
     @Bean
     SecurityFilterChain securityFilterChaim(
                                                 HttpSecurity http
-                                                , JWTFilter jwtValidationFilter
+                                                , JWTFilter jwtFilter
                                             ) throws Exception{
         
-        http.sessionManagement(sess-> sessionManagementConfigurer(sess));
-        http.authorizeHttpRequests(auth -> authorizeHttpRequestsConfigurer(auth));
-        http.addFilterAfter(jwtValidationFilter, BasicAuthenticationFilter.class);//?
+        http.sessionManagement(session-> sessionManagementConfigurer(session));
         http.cors(cors->corsConfigurationSource(cors));
         http.csrf(csrf->csrfConfigurer(csrf));
-        http.addFilterAfter(csrfCookieFilter,  BasicAuthenticationFilter.class);//?
+        http.addFilterBefore(jwtFilter, BasicAuthenticationFilter.class);
+        http.addFilterBefore(csrfCookieFilter,  BasicAuthenticationFilter.class);
+        http.authorizeHttpRequests(authorization -> authorizeHttpRequestsConfigurer(authorization));
         return http.build();
     }
 
@@ -89,7 +97,7 @@ public class SecurityConfig {
         var config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("*"));// limitar el origen cuando se cree un DNS para el frontend
         config.setAllowedMethods(List.of(POST));
-        config.setAllowedHeaders(List.of("*"));//Limitar los headers, debe permitir X-XSRF-TOKEN
+        config.setAllowedHeaders(List.of("*"));//.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
         return config;
     }
 
@@ -127,7 +135,6 @@ public class SecurityConfig {
 
     @SuppressWarnings("rawtypes")
     private CsrfConfigurer csrfConfigurer(CsrfConfigurer<HttpSecurity> httpSecurity){
-
         httpSecurity.csrfTokenRepository(withHttpOnlyTrue());
         httpSecurity.csrfTokenRequestHandler(configureCsrfTokenCreationForPerRequest());
         httpSecurity.ignoringRequestMatchers(ROUTE_HELLO);
@@ -149,23 +156,28 @@ public class SecurityConfig {
         
     @SuppressWarnings("rawtypes")
     private AuthorizationManagerRequestMatcherRegistry authorizeHttpRequestsConfigurer( 
-                            AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth) {
-        auth.requestMatchers(ROUTE_CREATE_USER).hasRole(ROLE_ADMIN);
-        auth.requestMatchers(ROUTE_CREATE_APPLICATION).hasRole(ROLE_ADMIN);
-        auth.requestMatchers(ROUTE_GET_APPLICATIONS).hasRole(ROLE_ADMIN);
-        auth.requestMatchers(ROUTE_GET_APPLICATION).hasRole(ROLE_ADMIN);
-        auth.requestMatchers(ROUTE_DOCUMENT_ACCESS_MANAGEMENT).hasRole(ROLE_ADMIN);
-        auth.requestMatchers(ROUTE_HELLO).permitAll();
-        return auth;
+        AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorization 
+    ){   
+        authorization.requestMatchers(ROUTE_CREATE_USER).hasRole(ROLE_ADMIN);
+        authorization.requestMatchers(ROUTE_CREATE_APPLICATION).hasRole(ROLE_ADMIN);
+        authorization.requestMatchers(ROUTE_GET_APPLICATIONS).hasRole(ROLE_ADMIN);
+        authorization.requestMatchers(ROUTE_GET_APPLICATION).hasRole(ROLE_ADMIN);
+        authorization.requestMatchers(ROUTE_DOCUMENT_ACCESS_MANAGEMENT).hasRole(ROLE_ADMIN);
+        authorization.requestMatchers(ROUTE_HELLO).permitAll();
+        return authorization;
     }
         
     @SuppressWarnings("rawtypes")
-    private SessionManagementConfigurer sessionManagementConfigurer(SessionManagementConfigurer<HttpSecurity> sessionManagementConfigurer){
-        return createPolicyToNotSaveTokenInSessions(sessionManagementConfigurer);
+    private SessionManagementConfigurer sessionManagementConfigurer(
+        SessionManagementConfigurer<HttpSecurity> sessionManagementConfigurer
+    ){
+        return disableTokenStorageInSession(sessionManagementConfigurer);
     }
 
     @SuppressWarnings("rawtypes")
-    private SessionManagementConfigurer createPolicyToNotSaveTokenInSessions(SessionManagementConfigurer<HttpSecurity> sessionManagementConfigurer){
+    private SessionManagementConfigurer disableTokenStorageInSession(
+        SessionManagementConfigurer<HttpSecurity> sessionManagementConfigurer
+    ){
         return sessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 }
