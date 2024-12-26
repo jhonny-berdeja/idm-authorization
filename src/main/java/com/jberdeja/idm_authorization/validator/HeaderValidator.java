@@ -1,10 +1,9 @@
 package com.jberdeja.idm_authorization.validator;
 
 import java.util.Objects;
-
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Component;
-
+import com.jberdeja.idm_authorization.utility.Utility;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -12,24 +11,27 @@ import lombok.extern.slf4j.Slf4j;
 public class HeaderValidator {
     private static final String AUTHORIZATION_HEADER_BEARER = "Bearer ";
 
-    public void validateHeaderAuthorizationValue(String headerAuthorizationValue){
-        if(isHeaderAuthorizationValueInvalid(headerAuthorizationValue)){
-            log.error("error, header authorization value is null or blank");
-            throw new IllegalArgumentException("error, header authorization value is null or blank");
-        }
+    public void validateAuthorizationExistence(String authorization){
+        String errorMessage = "error, authorization is null or blank";
+        Utility.validate(
+            authorization, 
+            Utility::isNullOrBlank, 
+            errorMessage
+        );
     }
 
-    public void validateHeaderAuthorization(String authorization){
-        if(isHeaderAuthorizationInvalid(authorization))
-            throw new IllegalArgumentException("The authorization header value in the request is invalid");
+    public void validateAuthorizationContent(String authorization){
+        validateIfAuthorizationIsNullOrBlank(authorization);
+        validateIfAuthorizationStartsWithBearer(authorization);
     }
 
     public void validateCsrfToken(CsrfToken csrfToken){
-        if(isCsrfTokenInvalid(csrfToken)){
-            log.error("error, CsrfToken is not in the request header");
-            throw new IllegalArgumentException("error, CsrfToken is not in the request header");
-        }
-
+        String errorMessage = "error, CsrfToken is not in the request header";
+        Utility.validate(
+            csrfToken, 
+            this::isCsrfTokenInvalid, 
+            errorMessage
+        );
     }
 
     private boolean isCsrfTokenInvalid(CsrfToken csrfToken){
@@ -39,24 +41,29 @@ public class HeaderValidator {
         return Objects.nonNull(csrfToken.getHeaderName());
     }
 
-    private boolean isHeaderAuthorizationValueInvalid(String headerAuthorizationValue){
-        return ! isHeaderAuthorizationValueValid(headerAuthorizationValue);
+    private void validateIfAuthorizationStartsWithBearer(String authorization){
+        String errorMessage = "error, authorization content does not start with 'Bearer'";
+        Utility.validate(
+            authorization, 
+            this::authorizationDoesnNotStartWithBearer, 
+            errorMessage
+        );
     }
 
-    private boolean isHeaderAuthorizationValueValid(String headerAuthorizationValue){
-        return Objects.nonNull(headerAuthorizationValue) && isNotBlackHeaderAuthorizationValue(headerAuthorizationValue);
+    private boolean authorizationDoesnNotStartWithBearer(String authorization){
+        return !authorizationStartWithBearer(authorization);
     }
 
-    private boolean isNotBlackHeaderAuthorizationValue(String headerAuthorizationValue){
-        return ! headerAuthorizationValue.isBlank();
+    private boolean authorizationStartWithBearer(String authorization){
+        return authorization.startsWith(AUTHORIZATION_HEADER_BEARER);
     }
 
-    private boolean isHeaderAuthorizationInvalid(String authorizationHeader){
-        return !isHeaderAuthorizationValid(authorizationHeader);
-    }
-
-    private boolean isHeaderAuthorizationValid(String requestTokenHeader){
-        return Objects.nonNull(requestTokenHeader) 
-                    && requestTokenHeader.startsWith(AUTHORIZATION_HEADER_BEARER);
+    private void validateIfAuthorizationIsNullOrBlank(String authorization){
+        String errorMessage = "error, authorization header is null or blank";
+        Utility.validate(
+            authorization, 
+            Utility::isNullObject, 
+            errorMessage
+        );
     }
 }

@@ -1,8 +1,11 @@
 package com.jberdeja.idm_authorization.utility;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -11,6 +14,13 @@ public class Utility {
         if (validator.test(value)) {
             log.error(errorMessage + ": '{}'", value);
             throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
+    public static <T> void validate(Supplier<Boolean> condition, String errorMessage) {
+        if (condition.get()) {
+            log.error(errorMessage);
+            throw new IllegalStateException(errorMessage);
         }
     }
 
@@ -34,4 +44,15 @@ public class Utility {
         return ! a.equalsIgnoreCase(b);
     }
 
+    public static boolean startsWith(String a, String b){
+        return a.startsWith(b);
+    }
+
+    public static <T> boolean isNullObject(T object){
+        return ! Optional.ofNullable(object).isPresent();
+    }
+
+    public static <T> boolean isNotNullObject(T object){
+        return ! isNullObject(object);
+    }
 }

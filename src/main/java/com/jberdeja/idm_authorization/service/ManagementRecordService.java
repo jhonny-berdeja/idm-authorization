@@ -19,9 +19,12 @@ public class ManagementRecordService {
 
     @Transactional
     public ManagementRecordEntity register(AccessManagement accessManagement){
-        ManagementRecordEntity managementRecordEntity = managementRecordMapper.mapToManagementRecordEntity(accessManagement);
+        var managementRecordEntity = mapToManagementRecordEntity(accessManagement);
         return managementRecordRepositoryExecutor.save(managementRecordEntity);
     }
 
+    private ManagementRecordEntity mapToManagementRecordEntity(AccessManagement accessManagement){
+        return managementRecordMapper.mapToManagementRecordEntity(accessManagement);
+    }
  
 }

@@ -20,8 +20,8 @@ public class ClaimsProcessor {
     @Autowired
     private ClaimsValidator claimsValidator;
 
-    public Claims getTokenClaims(String headerAuthorization){
-        String token = headerProcessor.getHeaderAuthorizationToken(headerAuthorization);
+    public Claims getTokenClaims(String authorization){
+        String token = headerProcessor.getAuthorizationToken(authorization);
         Claims claims = requestTokenClaims(token);
         validateClaimsExpiration(claims);
         return claims;

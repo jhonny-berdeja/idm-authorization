@@ -107,7 +107,9 @@ public class ManagementRecordMapper {
     }
 
     private RosterEntity getRosterEntityByEmail(String email) {
-        return rosterRepositoryExecutor.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("No roster was found with the email: " + email));
+        return rosterRepositoryExecutor.findByEmail(email).orElseThrow(
+            () -> new EntityNotFoundException("No roster was found with the email: " + email)
+        );
     }
     
     private User completTransitioner(String accessManagementRequesterEmail){

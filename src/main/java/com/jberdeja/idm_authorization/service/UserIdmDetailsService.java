@@ -22,7 +22,7 @@ public class UserIdmDetailsService implements UserDetailsService{
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<UserIdmEntity> userIdmEntity =  userProcessor.findByEmail(username);
         Optional<User> user = userProcessor.mapToUser(userIdmEntity);
-        userProcessor.validate(user);
+        userProcessor.validateUserExistence(user);
         return user.get();
     }
 }

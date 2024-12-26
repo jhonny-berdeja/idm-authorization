@@ -26,10 +26,19 @@ public class CsrfCookieFilter extends OncePerRequestFilter{
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) 
-                                    throws ServletException, IOException{                 
+                                    throws ServletException, IOException{    
+                                        System.out.println("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"); 
+                                        System.out.println("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");   
+                                        System.out.println("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");   
+                                        System.out.println("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");   
+                                        System.out.println("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");   
+                                        System.out.println("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");   
+                                        System.out.println("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");   
+                                        System.out.println("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");   
+                                        System.out.println("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");               
         CsrfToken csrfToken = getHeaderCsrfToken(request);                    
         validateCsrfToken(csrfToken);
-        addCsrfTokenToResponseHeaderForNextRequest(response, csrfToken);
+        addCsrfTokenForNextRequest(response, csrfToken);
         filterChain.doFilter(request, response);                
     }
 
@@ -41,8 +50,8 @@ public class CsrfCookieFilter extends OncePerRequestFilter{
         headerProcessor.validateCsrfToken(csrfToken);
     }
 
-    private void addCsrfTokenToResponseHeaderForNextRequest(HttpServletResponse response, CsrfToken csrfToken){
-        httpServletRequestProcessor.addCsrfTokenToResponseHeaderForNextRequest(response, csrfToken);
+    private void addCsrfTokenForNextRequest(HttpServletResponse response, CsrfToken csrfToken){
+        httpServletRequestProcessor.addCsrfTokenToResponse(response, csrfToken);
     }
 
 }

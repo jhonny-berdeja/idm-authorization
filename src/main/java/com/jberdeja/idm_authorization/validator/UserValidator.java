@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserValidator {
-    public void validate(Optional<User> user){
+    public void validateUserExistence(Optional<User> user){
         user.orElseThrow(()->new UsernameNotFoundException("User not exist in database"));
     }
 }

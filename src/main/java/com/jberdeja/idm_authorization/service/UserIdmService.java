@@ -18,9 +18,13 @@ public class UserIdmService {
 
     public void createUser(UserIdm userIdm ) {
         log.info("starting user creation: " + userIdm.getEmail());
-        UserIdmEntity userIdmEntity = userMapper.mapToUserIdmEntity(userIdm);
+        UserIdmEntity userIdmEntity = mapToUserIdmEntity(userIdm);
         userIdmRepositoryExecutor.save(userIdmEntity);
         log.info("user created successfully");
+    }
+
+    private UserIdmEntity mapToUserIdmEntity(UserIdm userIdm){
+        return userMapper.mapToUserIdmEntity(userIdm);
     }
 
 }

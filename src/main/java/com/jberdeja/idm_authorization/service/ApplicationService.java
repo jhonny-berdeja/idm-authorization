@@ -20,19 +20,33 @@ public class ApplicationService {
     private ApplicationMapper applicationMapper;  
 
     public ApplicationEntity createApplication(ApplicationEntity application){
-        applicacionValidator.validateApplicationName(application.getName());
-        applicacionValidator.validateIfExistsApplication(application.getName());
+        validateApplication(application);
         return applicationRepositoryExecutor.save(application);
     }
 
-    public ApplicationEntity getApplicationByName(String appName) {
-        applicacionValidator.validateApplicationName(appName);
-        applicacionValidator.validateIfNotExistsApplication(appName);
-        return applicationRepositoryExecutor.findByName(appName);
+    public ApplicationEntity getApplicationByName(String applicationName) {
+        validateApplicationName(applicationName);
+        return applicationRepositoryExecutor.findByName(applicationName);
     }
 
     public List<String> getApplications(){
         List<ApplicationEntity> applicationEntities = applicationRepositoryExecutor.findAll();
+        validateApplicationEntities(applicationEntities);
         return applicationMapper.mapToListOfApplicationName(applicationEntities);
+    }
+
+    private void validateApplication(ApplicationEntity application){
+        String applicationName = application.getName();
+        applicacionValidator.validateApplicationName(applicationName);
+        applicacionValidator.validateIfExistsApplication(applicationName);
+    }
+
+    private void validateApplicationName(String applicationName){
+        applicacionValidator.validateApplicationName(applicationName);
+        applicacionValidator.validateIfNotExistsApplication(applicationName);
+    }
+
+    private void validateApplicationEntities(List<ApplicationEntity> applicationEntities ){
+        applicacionValidator.validateApplicationEntities(applicationEntities);
     }
 }

@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
 import com.jberdeja.idm_authorization.dto.http.JwtAuthenticationRequest;
 import com.jberdeja.idm_authorization.dto.http.JwtAuthenticationResponse;
 import com.jberdeja.idm_authorization.exception.ConnectorRequestIdmException;

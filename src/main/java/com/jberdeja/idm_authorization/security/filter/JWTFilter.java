@@ -34,14 +34,12 @@ public class JWTFilter extends OncePerRequestFilter{
         HttpServletRequest request,
         HttpServletResponse response,
         FilterChain filterChain
-        ) throws ServletException, IOException {
+    ) throws ServletException, IOException {
 
         String url = obtainRequestURL(request);
-
-        if (isValidationRequired(url)) {
+        if (isValidationRequired(url)){
             applyValidations(request);
         }
-
         filterChain.doFilter(request, response);
     }
 
@@ -50,34 +48,44 @@ public class JWTFilter extends OncePerRequestFilter{
     }
 
     private void applyValidations(HttpServletRequest request) {
+        System.out.println("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
+        System.out.println("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
+        System.out.println("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
+        System.out.println("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
+        System.out.println("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
+        System.out.println("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
+        System.out.println("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
+        System.out.println("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
+        System.out.println("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
+        System.out.println("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
         String authorization = getHeaderAuthorization(request);
-        validateAuthorizationHeader(authorization);
+        validateAuthorization(authorization);
         
-        JwtValidatorResult jwtResult = validateToken(authorization);
+        JwtValidatorResult jwtResult = validateAuthorizationToken(authorization);
         UserDetails userDetails = jwtResult.getDatabaseUserDetails();
         
-        validateSecurityContext();
-        setAuthenticationToContext(userDetails, request);
+        validateAuthentication();
+        setAuthenticationInCurrentThreadContext(userDetails, request);
     }
 
     private String getHeaderAuthorization(HttpServletRequest request) {
         return httpServletRequestProcessor.getHeaderAuthorization(request);
     }
     
-    private void validateAuthorizationHeader(String authHeader) {
-        httpServletRequestProcessor.validateHeaderAuthorization(authHeader);
+    private void validateAuthorization(String authHeader) {
+        httpServletRequestProcessor.validateAuthorizationExistence(authHeader);
     }
     
-    private JwtValidatorResult validateToken(String authorization) {
+    private JwtValidatorResult validateAuthorizationToken(String authorization) {
         return jwtProcessor.validateTokenBelongsToAuthenticatedUser(authorization);
     }
     
-    private void validateSecurityContext() {
-        securityContextHolderProcessor.validateAuthenticationInCurrentThreadContext();
+    private void validateAuthentication() {
+        securityContextHolderProcessor.verifyIfAuthenticationIsPresentInContext();
     }
     
-    private void setAuthenticationToContext(UserDetails userDetails, HttpServletRequest request) {
-        securityContextHolderProcessor.addAuthenticationToTheCurrentThreadContext(userDetails, request);
+    private void setAuthenticationInCurrentThreadContext(UserDetails userDetails, HttpServletRequest request) {
+        securityContextHolderProcessor.setAuthenticationInContext(userDetails, request);
     }
     
     private boolean isValidationRequired(String requestURL){
