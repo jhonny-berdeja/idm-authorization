@@ -23,8 +23,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import com.jberdeja.idm_authorization.security.filter.CsrfCookieFilter;
-import com.jberdeja.idm_authorization.security.filter.JWTFilter;
+import com.jberdeja.idm_authorization.security.filter.HttpServletFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -40,28 +39,16 @@ public class SecurityConfig {
     private static final String GET = "get";
     private static final String STRING_NULL = null;
 
-    @Autowired
-    CsrfCookieFilter csrfCookieFilter;
-
-/*     Razones para este orden
-    1) sessionManagement primero: Asegura que la configuración de la sesión esté establecida antes de que otros filtros la usen.
-    2) cors temprano: Garantiza que las solicitudes de origen cruzado sean procesadas correctamente antes de ejecutar los filtros personalizados.
-    3) csrf básico antes de los filtros personalizados: Configura las políticas de CSRF antes de manejar los tokens relacionados.
-    4) jwtFilter antes de otros filtros: Valida el token JWT y configura el contexto de seguridad para que otros filtros y configuraciones puedan depender de ello.
-    5) csrfCookieFilter después de jwtFilter: Garantiza que el token CSRF se maneje después de que el SecurityContext haya sido configurado.
-    6) authorizeHttpRequests al final: Define las reglas de autorización después de que todos los filtros hayan procesado la solicitud.
-*/
     @Bean
     SecurityFilterChain securityFilterChaim(
                                                 HttpSecurity http
-                                                , JWTFilter jwtFilter
+                                                , HttpServletFilter httpServletFilter
                                             ) throws Exception{
         
         http.sessionManagement(session-> sessionManagementConfigurer(session));
         http.cors(cors->corsConfigurationSource(cors));
         http.csrf(csrf->csrfConfigurer(csrf));
-        http.addFilterBefore(jwtFilter, BasicAuthenticationFilter.class);
-        http.addFilterBefore(csrfCookieFilter,  BasicAuthenticationFilter.class);
+        http.addFilterBefore(httpServletFilter, BasicAuthenticationFilter.class);
         http.authorizeHttpRequests(authorization -> authorizeHttpRequestsConfigurer(authorization));
         return http.build();
     }

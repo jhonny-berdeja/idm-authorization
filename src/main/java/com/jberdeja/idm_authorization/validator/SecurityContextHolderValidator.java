@@ -9,18 +9,16 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class SecurityContextHolderValidator {
     public void verifyIfAuthenticationIsPresentInContext(){
-        String messageError = "error, an authentication already exists in the context of the current thread";
         Utility.validate(
             this::isAuthenticationPresentInContext, 
-            messageError
+            "error, an authentication already exists in the context of the current thread"
         );
     }
 
     public void validateContext(){
-        String messageError = "error, current thread context is null";
         Utility.validate(
             this::isNullContext,
-            messageError
+             "error, current thread context is null"
         );
     }
 
@@ -37,6 +35,8 @@ public class SecurityContextHolderValidator {
     }
 
     private boolean isNotNullAuthentication(){
-        return Utility.isNullObject(SecurityContextHolder.getContext().getAuthentication());
+        return Utility.isNullObject(
+            SecurityContextHolder.getContext().getAuthentication()
+        );
     }
 }

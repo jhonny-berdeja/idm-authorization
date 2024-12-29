@@ -8,4 +8,5 @@ import com.jberdeja.idm_authorization.entity.UserIdmEntity;
 @Repository
 public interface UserIdmRepository extends CrudRepository<UserIdmEntity, Long>{
     Optional<UserIdmEntity> findByEmail(String email);
+    boolean existsByEmail(String email);
 }

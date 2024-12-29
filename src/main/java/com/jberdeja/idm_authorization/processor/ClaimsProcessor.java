@@ -42,7 +42,7 @@ public class ClaimsProcessor {
         claimsValidator.validateClaimsExpiration(claims);
     }
 
-     public void validateUsernamen(String username){
+    public void validateUsernamen(String username){
         claimsValidator.validateUsernamen(username);
     }
 }

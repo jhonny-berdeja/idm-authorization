@@ -11,13 +11,21 @@ import lombok.extern.slf4j.Slf4j;
 public class HeaderValidator {
     private static final String AUTHORIZATION_HEADER_BEARER = "Bearer ";
 
-    public void validateAuthorizationExistence(String authorization){
-        String errorMessage = "error, authorization is null or blank";
-        Utility.validate(
-            authorization, 
-            Utility::isNullOrBlank, 
-            errorMessage
-        );
+    public boolean headerAuthorizationNotExists(String authorization) {
+        return Utility.isNullOrBlank(authorization);
+    }
+
+
+    public boolean headerCookieExists(String cookie){
+        return Utility.isNotNullOrBlank(cookie);
+    }
+
+    public boolean headerXxsrfTokenExists(String xXsrfToken){
+        return Utility.isNotNullOrBlank(xXsrfToken);
+    }
+
+    public boolean headerAuthorizationExists(String authorization){
+        return Utility.isNotNullOrBlank(authorization);
     }
 
     public void validateAuthorizationContent(String authorization){
@@ -26,7 +34,7 @@ public class HeaderValidator {
     }
 
     public void validateCsrfToken(CsrfToken csrfToken){
-        String errorMessage = "error, CsrfToken is not in the request header";
+        String errorMessage = "error, CsrfToken is null";
         Utility.validate(
             csrfToken, 
             this::isCsrfTokenInvalid, 

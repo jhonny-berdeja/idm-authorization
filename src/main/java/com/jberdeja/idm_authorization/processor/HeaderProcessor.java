@@ -15,8 +15,20 @@ public class HeaderProcessor {
     @Autowired
     private HeaderValidator headerValidator;
 
-    public void validateAuthorizationExistence(String authorization){
-        headerValidator.validateAuthorizationExistence(authorization);
+    public boolean headerAuthorizationNotExists(String authorization) {
+        return headerValidator.headerAuthorizationNotExists(authorization);
+    }
+
+    public boolean headerXxsrfTokenExists(String xXsrfToken){
+        return headerValidator.headerXxsrfTokenExists(xXsrfToken);
+    }
+
+    public boolean headerCookieExists(String cookie){
+        return headerValidator.headerCookieExists(cookie);
+    }
+
+    public boolean headerAuthorizationExists(String authorization){
+        return headerValidator.headerAuthorizationExists(authorization);
     }
 
     public String getAuthorizationToken(String headerAuthorization){

@@ -2,7 +2,6 @@ package com.jberdeja.idm_authorization.controller;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,55 +36,34 @@ public class Controller {
     }
 
     @PostMapping(path = "/create-user")
-    public ResponseEntity<String> createUser(@Validated @RequestBody UserIdmRequest request) {
-        try{
-            UserIdm userIdm = request.getUserIdm();
-            userIdmService.createUser(userIdm);
-            return ResponseEntity.ok("User created successfully");
-        }catch(Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());// falta retornar bien el SERVER_ERROR
-        }
+    public ResponseEntity<?> createUser(@Validated @RequestBody UserIdmRequest request) {
+        UserIdm userIdm = request.getUserIdm();
+        userIdmService.createUser(userIdm);
+        return ResponseEntity.ok("User created successfully");
     }
 
     @PostMapping(path = "/create-application")
     public ResponseEntity<?> createApplication(@Validated @RequestBody ApplicactionRequest request){
-        try{
-            ApplicationEntity applicationEntity = applicationService.createApplication(request.getApplicationEntity());
-            return ResponseEntity.ok(new ApplicationResponse(applicationEntity));
-            
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+        ApplicationEntity applicationEntity = applicationService.createApplication(request.getApplicationEntity());
+        return ResponseEntity.ok(new ApplicationResponse(applicationEntity));
     }
 
     @GetMapping(path = "/get-applications")
     public ResponseEntity<?> getApplications(){
-        try{
-            List<String> applications = applicationService.getApplications();
-            return ResponseEntity.ok(new ApplicationsResponse(applications));
-        }catch(Exception e){
-            return null;
-        }
+        List<String> applications = applicationService.getApplications();
+        return ResponseEntity.ok(new ApplicationsResponse(applications));
     }
 
     @GetMapping(path = "/get-application/{app}")
     public ResponseEntity<?> getApplication(@PathVariable String app){
-        try{
-            ApplicationEntity applicationEntity =  applicationService.getApplicationByName(app);
-            return ResponseEntity.ok(new ApplicationResponse(applicationEntity));
-        }catch(Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());// falta retornar bien el SERVER_ERROR
-        }
+        ApplicationEntity applicationEntity =  applicationService.getApplicationByName(app);
+        return ResponseEntity.ok(new ApplicationResponse(applicationEntity));
     }
 
     @PostMapping(path = "/document-access-management")
     public ResponseEntity<?> documentAccessManagement(@Validated @RequestBody AccessManagementRequest request){
-        try{
-            var managementRecordEntity = managementRecordService.register(request.getAccessManagement());
-            return ResponseEntity.ok(new AccessManagementResponse(managementRecordEntity));
-        }catch(Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+        var managementRecordEntity = managementRecordService.register(request.getAccessManagement());
+        return ResponseEntity.ok(new AccessManagementResponse(managementRecordEntity));
     }
     
 }

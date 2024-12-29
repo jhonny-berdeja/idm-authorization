@@ -19,7 +19,7 @@ public class JwtProcessor {
     @Autowired
     private ClaimsProcessor claimsProcessor;
 
-    public JwtValidatorResult validateTokenBelongsToAuthenticatedUser(String authHeader) {
+    public JwtValidatorResult validateTokenBelongsToAuthenticatedUser(String authHeader){
         
         JwtValidatorResult result = jwtValidator.validateTokenBelongsToAuthenticatedUser(
             authHeader, 

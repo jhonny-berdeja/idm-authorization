@@ -1,10 +1,8 @@
 package com.jberdeja.idm_authorization.validator;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import com.jberdeja.idm_authorization.entity.ApplicationEntity;
 import com.jberdeja.idm_authorization.executor.ApplicationRepositoryExecutor;
 import com.jberdeja.idm_authorization.utility.Utility;
@@ -51,6 +49,13 @@ public class ApplicacionValidator {
             errorMessage
         );
     }
+
+    public void validateApplication(ApplicationEntity application){
+        String applicationName = application.getName();
+        validateApplicationName(applicationName);
+        validateIfExistsApplication(applicationName);
+    }
+
 
     private boolean doesNotExistByName(String applicationName){
         return applicationRepositoryExecutor.doesNotExistByName(applicationName);

@@ -5,6 +5,9 @@ import org.springframework.stereotype.Repository;
 import com.jberdeja.idm_authorization.entity.ManagementRecordEntity;
 
 @Repository
-public interface ManagementRecordRepository extends MongoRepository<ManagementRecordEntity, Long>{
+public interface ManagementRecordRepository extends 
+    MongoRepository<ManagementRecordEntity, Long>
+{
+    
     ManagementRecordEntity findFirstByOrderByManagementRecordCreationDateDesc();
 }

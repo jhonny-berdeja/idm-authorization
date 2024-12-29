@@ -39,7 +39,9 @@ public class SecurityContextHolderProcessor {
     ){   
 
         securityContextHolderValidator.validateContext();
-        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(
+            usernamePasswordAuthenticationToken
+        );
     }
 
     private UsernamePasswordAuthenticationToken buildUsernamePasswordAuthenticationToken(
@@ -52,12 +54,17 @@ public class SecurityContextHolderProcessor {
             OBJECT_NULL,
             userDetails.getAuthorities()
         );
-        WebAuthenticationDetails webAuthenticationDetails = buildWebAuthenticationDetails(request);
+        WebAuthenticationDetails webAuthenticationDetails = buildWebAuthenticationDetails(
+            request
+        );
         usernamePasswordAuthenticationToken.setDetails(webAuthenticationDetails);
         return usernamePasswordAuthenticationToken;
     }
 
-    private WebAuthenticationDetails buildWebAuthenticationDetails(HttpServletRequest request){
+    private WebAuthenticationDetails buildWebAuthenticationDetails(
+        HttpServletRequest request
+    ){
+        
         return new WebAuthenticationDetailsSource().buildDetails(request);
     }
 }
