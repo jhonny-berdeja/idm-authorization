@@ -14,11 +14,11 @@ public class JwtValidator {
 
     public JwtValidatorResult validateTokenBelongsToAuthenticatedUser(
         String authorization,
-        Function<String, Claims> getAuthorizationClaims, 
+        Function<String, Claims> getTokenClaims, 
         Function<Claims, String> getClaimsUsername,
         Function<String, UserDetails> getUserDetailsFromDatabase) {
 
-        Claims claims = getAuthorizationClaims.apply(authorization);
+        Claims claims = getTokenClaims.apply(authorization);
         String username = getClaimsUsername.apply(claims);
         UserDetails userDetails = getUserDetailsFromDatabase.apply(username);
         validateMatchOfTwoUsers(username, userDetails.getUsername());

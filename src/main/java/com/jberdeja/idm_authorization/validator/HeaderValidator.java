@@ -1,15 +1,78 @@
 package com.jberdeja.idm_authorization.validator;
 
+import java.io.IOException;
 import java.util.Objects;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Component;
+import com.jberdeja.idm_authorization.processor.Processor;
 import com.jberdeja.idm_authorization.utility.Utility;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
 public class HeaderValidator {
     private static final String AUTHORIZATION_HEADER_BEARER = "Bearer ";
+    private static final String HEADER_COOKIE = "Cookie";
+
+    public boolean applyAuthorizationValidation(
+        HttpServletRequest request, 
+        HttpServletResponse response,
+        Processor authorizationProcessor
+    ) throws IOException{
+
+        return applyValidation(
+            authorizationProcessor, 
+            request, 
+            response, 
+            "error, authorization header is null or blank"
+        );
+    }
+
+    public boolean applyXxsrfTokenValidation(
+        HttpServletRequest request, 
+        HttpServletResponse response,
+        Processor xxsrfTokenProcessor
+    ) throws IOException{
+
+        return applyValidation(
+            xxsrfTokenProcessor, 
+            request, 
+            response, 
+            "error, x-xsrf-token header is null or blank"
+        );
+    }
+
+    public boolean applyCookieValidation(
+        HttpServletRequest request, 
+        HttpServletResponse response,
+        Processor cookieProcessor
+    ) throws IOException{
+
+        return applyValidation(
+            cookieProcessor, 
+            request, 
+            response, 
+            "error, cookie header is null or blank"
+        );
+    }
+
+    private boolean applyValidation(
+        Processor processor, 
+        HttpServletRequest request, 
+        HttpServletResponse response, 
+        String erreMessage
+    ) throws IOException{
+
+        var authorization = processor.applyValidations(request);
+        if(authorization.isNecessaryToFilter()){
+            return Boolean.TRUE;
+        }
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN); 
+        response.getWriter().write(erreMessage);
+        return Boolean.FALSE;
+    }
 
     public boolean headerAuthorizationNotExists(String authorization) {
         return Utility.isNullOrBlank(authorization);
@@ -74,4 +137,26 @@ public class HeaderValidator {
             errorMessage
         );
     }
+
+
+
+
+
+
+
+
+
+    public String getHeaderCookie(HttpServletRequest request){
+        validateHttpServletRequest(request);
+        return request.getHeader(HEADER_COOKIE); 
+    }
+
+    public void validateHttpServletRequest(HttpServletRequest request ){
+        Utility.validate(
+            request, 
+            Utility::isNullObject, 
+            "error, HttpServletRequest is null"
+        );
+    }
+
 }

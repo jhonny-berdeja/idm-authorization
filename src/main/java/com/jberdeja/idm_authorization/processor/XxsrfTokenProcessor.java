@@ -1,11 +1,14 @@
 package com.jberdeja.idm_authorization.processor;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.jberdeja.idm_authorization.dto.validator_result.HeaderValidationResult;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -13,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 public class XxsrfTokenProcessor implements Processor {
 
     @Autowired
-    private HttpServletProcessor httpServletProcessor;
+    private HeaderProcessor headerProcessor;
 
     @Override
     public HeaderValidationResult applyValidations(HttpServletRequest request){
@@ -25,11 +28,25 @@ public class XxsrfTokenProcessor implements Processor {
     }
 
     private String getHeaderXxsrfToken(HttpServletRequest request){
-        return httpServletProcessor.getHeaderXxsrfToken(request);
+        return headerProcessor.getHeaderXxsrfToken(request);
     }
 
     private boolean headerXxsrfTokenExists(String xXsrfToken){
-        return httpServletProcessor.headerXxsrfTokenExists(xXsrfToken);
+        return headerProcessor.headerXxsrfTokenExists(xXsrfToken);
     }
+
+    public boolean applyXxsrfTokenValidation(
+        HttpServletRequest request, 
+        HttpServletResponse response,
+        Processor xxsrfTokenProcessor
+    ) throws IOException{
+
+        return headerProcessor.applyXxsrfTokenValidation(
+            request, 
+            response, 
+            xxsrfTokenProcessor
+        );
+    }
+
 
 }

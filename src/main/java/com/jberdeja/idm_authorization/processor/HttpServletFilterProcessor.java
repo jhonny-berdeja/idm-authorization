@@ -10,16 +10,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class HttpServletFilterProcessor {
+
+
     @Autowired
-    private HttpServletProcessor httpServletProcessor;
-    @Autowired 
     private AuthorizationProcessor authorizationProcessor;
     @Autowired
     private XxsrfTokenProcessor xxsrfTokenProcessor;
     @Autowired
     private CookieProcessor cookieProcessor;
     @Autowired
-    private CsrfCookieProcessor csrfCookieProcessor;
+    private CsrfTokenProcessor csrfTokenProcessor;
 
     public boolean isNecessaryToFilter(
         boolean authorization, 
@@ -31,50 +31,29 @@ public class HttpServletFilterProcessor {
         return authorization && xXsrfToken && cookie && csrfToken;
     }
 
+
     public boolean applyCsrfTokenValidation(
         HttpServletRequest request, 
         HttpServletResponse response
     ) throws IOException{
 
-        boolean validationResult = applyValidation(
-            csrfCookieProcessor, 
+        return csrfTokenProcessor.applyCsrfTokenValidation(
             request, 
-            response, 
-            "error, csrf token attribite is null"
+            response,
+            csrfTokenProcessor
         );
-
-        if(isResultInvalid(validationResult)){
-            return Boolean.FALSE;
-        }
-
-        var csrfToken = httpServletProcessor.geAttributeCsrfToken(request);
-        httpServletProcessor.addCsrfTokenForNextRequest(response, csrfToken);
-        return Boolean.TRUE;
     }
+
 
     public boolean applyAuthorizationValidation(
         HttpServletRequest request, 
         HttpServletResponse response
     ) throws IOException{
 
-        return applyValidation(
-            authorizationProcessor, 
+        return authorizationProcessor.applyAuthorizationValidation(
             request, 
             response, 
-            "error, authorization header is null or blank"
-        );
-    }
-
-    public boolean applyXxsrfTokenValidation(
-        HttpServletRequest request, 
-        HttpServletResponse response
-    ) throws IOException{
-
-        return applyValidation(
-            xxsrfTokenProcessor, 
-            request, 
-            response, 
-            "error, x-xsrf-token header is null or blank"
+            authorizationProcessor
         );
     }
 
@@ -83,31 +62,21 @@ public class HttpServletFilterProcessor {
         HttpServletResponse response
     ) throws IOException{
 
-        return applyValidation(
-            cookieProcessor, 
+        return cookieProcessor.applyCookieValidation(
             request, 
             response, 
-            "error, cookie header is null or blank"
-        );
+            cookieProcessor);
     }
 
-    private boolean applyValidation(
-        Processor processor, 
+    public boolean applyXxsrfTokenValidation(
         HttpServletRequest request, 
-        HttpServletResponse response, 
-        String erreMessage
+        HttpServletResponse response
     ) throws IOException{
 
-        var authorization = processor.applyValidations(request);
-        if(authorization.isNecessaryToFilter()){
-            return Boolean.TRUE;
-        }
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN); 
-        response.getWriter().write(erreMessage);
-        return Boolean.FALSE;
-    }
-
-    private boolean isResultInvalid(boolean validationResult){
-        return ! validationResult;
+        return xxsrfTokenProcessor.applyXxsrfTokenValidation(
+            request, 
+            response, 
+            xxsrfTokenProcessor
+        );
     }
 }

@@ -1,20 +1,21 @@
 package com.jberdeja.idm_authorization.processor;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import com.jberdeja.idm_authorization.dto.validator_result.HeaderValidationResult;
 import com.jberdeja.idm_authorization.dto.validator_result.JwtValidatorResult;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-@AllArgsConstructor
-@Slf4j
 public class AuthorizationProcessor implements Processor {
     @Autowired
-    private HttpServletProcessor httpServletProcessor;
+    private HeaderProcessor headerProcessor;
+    @Autowired
+    private JwtProcessor jwtProcessor;
     @Autowired
     private SecurityContextHolderProcessor securityContextHolderProcessor;
 
@@ -38,16 +39,12 @@ public class AuthorizationProcessor implements Processor {
         return new HeaderValidationResult(Boolean.TRUE);
     }
 
-    private String getHeaderAuthorization(HttpServletRequest request) {
-        return httpServletProcessor.getHeaderAuthorization(request);
-    }
-    
     private boolean headerAuthorizationNotExists(String authorization) {
-        return httpServletProcessor.headerAuthorizationNotExists(authorization);
+        return headerProcessor.headerAuthorizationNotExists(authorization);
     }
     
     private JwtValidatorResult validateAuthorizationToken(String authorization) {
-        return httpServletProcessor.validateTokenBelongsToAuthenticatedUser(
+        return jwtProcessor.validateTokenBelongsToAuthenticatedUser(
             authorization
         );
     }
@@ -63,5 +60,24 @@ public class AuthorizationProcessor implements Processor {
         
         securityContextHolderProcessor.setAuthenticationInContext(userDetails, request);
     }
+
+    private String getHeaderAuthorization(HttpServletRequest request){
+        return headerProcessor.getHeaderAuthorization(request);
+    }
+
+    public boolean applyAuthorizationValidation(
+        HttpServletRequest request, 
+        HttpServletResponse response,
+        Processor authorizationProcessor
+    ) throws IOException{
+
+        return headerProcessor.applyAuthorizationValidation(
+            request, 
+            response, 
+            authorizationProcessor
+        );
+    }
+
+
     
 }

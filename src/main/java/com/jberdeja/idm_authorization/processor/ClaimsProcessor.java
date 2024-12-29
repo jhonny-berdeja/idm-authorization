@@ -11,20 +11,25 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class ClaimsProcessor {
+    private static final String PREFIX_BEARER = "(?i)Bearer ";
+    private static final String EMPTY = "";
     @Autowired
     private JwtConnector jwtConnector;
-    @Autowired
-    private HeaderProcessor headerProcessor;
     @Autowired
     private ClaimsMapper claimsMapper;
     @Autowired
     private ClaimsValidator claimsValidator;
 
     public Claims getTokenClaims(String authorization){
-        String token = headerProcessor.getAuthorizationToken(authorization);
+        String token = getAuthorizationToken(authorization);
         Claims claims = requestTokenClaims(token);
         validateClaimsExpiration(claims);
         return claims;
+    }
+
+    public String getAuthorizationToken(String authorization){
+        claimsValidator.validateAuthorizationContent(authorization);
+        return authorization.replaceFirst(PREFIX_BEARER, EMPTY);
     }
 
     public String getClaimsUsername(Claims claims){

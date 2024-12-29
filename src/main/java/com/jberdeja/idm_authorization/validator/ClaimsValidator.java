@@ -10,6 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class ClaimsValidator {
 
+    public void validateAuthorizationContent(String authorization){
+        Utility.validate(
+            authorization, 
+            Utility::isNullOrBlank, 
+            "error, header authorization content is null or blank"
+        );
+    }
+
     public void validateClaimsExpiration(Claims claims){
         String errorMessage = "error, the claims are from an expired token";
         Utility.validate(
