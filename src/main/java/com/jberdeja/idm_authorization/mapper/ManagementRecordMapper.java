@@ -68,31 +68,32 @@ public class ManagementRecordMapper {
 
     private User buildManagementRecordCreator(String accessManagementRequesterEmail){
         RosterEntity roster = getRosterEntityByEmail(accessManagementRequesterEmail);
-        User managementRecordCreatorUser = new User();
-        managementRecordCreatorUser.setEmail(accessManagementRequesterEmail);
-        managementRecordCreatorUser.setNames(roster.getName());
-        managementRecordCreatorUser.setLastnames(roster.getLastname());
-        managementRecordCreatorUser.setUserPrincipalName(roster.getUserPrincipalName());
-        return managementRecordCreatorUser;
+        return User.builder()
+        .email(accessManagementRequesterEmail)
+        .names(roster.getName())
+        .lastnames(roster.getLastname())
+        .userPrincipalName(roster.getUserPrincipalName())
+        .build();
     }
 
-    private User buildAccessManagementFor(String AccessManagementForUserEmail){
-        RosterEntity roster = getRosterEntityByEmail(AccessManagementForUserEmail);
-        User accessManagementForUser = new User();
-        accessManagementForUser.setEmail(AccessManagementForUserEmail);
-        accessManagementForUser.setNames(roster.getName());
-        accessManagementForUser.setLastnames(roster.getLastname());
-        accessManagementForUser.setUserPrincipalName(roster.getUserPrincipalName());
-        return accessManagementForUser;
+    private User buildAccessManagementFor(String accessManagementForUserEmail){
+        RosterEntity roster = getRosterEntityByEmail(accessManagementForUserEmail);
+        return User.builder()
+        .email(accessManagementForUserEmail)
+        .names(roster.getName())
+        .lastnames(roster.getLastname())
+        .userPrincipalName(roster.getUserPrincipalName())
+        .build();
     } 
     private List<Status> buildTransitions(String accessManagementRequesterEmail){
-        Status status = new Status();
-        status.setNumber(FIRST_STATUS);
-        status.setTransitioner(completTransitioner(accessManagementRequesterEmail));
-        status.setCurrentStatus(CREATED);
-        status.setOriginStatus(CREATED);
-        status.setDateTransition(new Date());
-        status.setFollowingPossibleStates(FOLLOWING_POSSIBLES_STATES);
+        Status status = Status.builder()
+        .number(FIRST_STATUS)
+        .transitioner(completTransitioner(accessManagementRequesterEmail))
+        .currentStatus(CREATED)
+        .originStatus(CREATED)
+        .dateTransition(new Date())
+        .followingPossibleStates(FOLLOWING_POSSIBLES_STATES)
+        .build();
         return List.of(status);
     }
 
@@ -114,11 +115,11 @@ public class ManagementRecordMapper {
     
     private User completTransitioner(String accessManagementRequesterEmail){
         RosterEntity roster = getRosterEntityByEmail(accessManagementRequesterEmail);
-        User user = new User();
-        user.setNames(roster.getName());
-        user.setLastnames(roster.getLastname());
-        user.setUserPrincipalName(roster.getUserPrincipalName());
-        return user;
+        return User.builder()
+        .names(roster.getName())
+        .lastnames(roster.getLastname())
+        .userPrincipalName(roster.getUserPrincipalName())
+        .build();
     }
 
     private ManagementRecordEntity findFirstByOrderByManagementRecordEntityCreationDateDesc(){

@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.jberdeja.idm_authorization.exception.MongoDatabaseIdmException;
 import com.jberdeja.idm_authorization.exception.PostgresSqlDatabaseIdmException;
-
-import jakarta.servlet.ServletException;
 import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -19,13 +17,6 @@ import java.util.Map;
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException ex) {
-        log.error("Error message: " + ex.getMessage(), ex);
-        var body = buildBadRequestBodyMap(ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
-    }
     
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
@@ -37,6 +28,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException ex) {
+        log.error("Error message: " + ex.getMessage(), ex);
+        var body = buildBadRequestBodyMap(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+    
     @ExceptionHandler(PostgresSqlDatabaseIdmException.class)
     public ResponseEntity<?> handlePostgresSqlDatabaseIdmException(PostgresSqlDatabaseIdmException ex) {
         log.error("Error message: " + ex.getMessage(), ex);

@@ -46,10 +46,12 @@ public class UserMapper {
     }
 
     private UserIdmEntity buildUserIdmEntity(UserIdm userIdm, List<RoleIdmEntity> roles){
-        UserIdmEntity user = new UserIdmEntity();
-        user.setEmail(userIdm.getEmail());
-        user.setPwd(userIdm.getPassword());
-        user.setRoles(roles);
+        UserIdmEntity user = UserIdmEntity.builder()
+        .email(userIdm.getEmail())
+        .pwd(userIdm.getPassword())
+        .roles(roles)
+        .build();
+
         return user;
     }
 }

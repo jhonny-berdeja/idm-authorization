@@ -1,7 +1,6 @@
 package com.jberdeja.idm_authorization.processor;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 

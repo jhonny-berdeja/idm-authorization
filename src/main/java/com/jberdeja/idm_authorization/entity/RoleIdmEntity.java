@@ -1,6 +1,5 @@
 package com.jberdeja.idm_authorization.entity;
 
-import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

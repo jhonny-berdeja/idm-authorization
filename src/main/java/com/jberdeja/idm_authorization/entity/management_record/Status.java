@@ -2,11 +2,14 @@ package com.jberdeja.idm_authorization.entity.management_record;
 
 import java.util.Date;
 import java.util.List;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+
+@Builder
 @Data
-@NoArgsConstructor
+@AllArgsConstructor
 public class Status {
     private Integer number;
     private User transitioner;

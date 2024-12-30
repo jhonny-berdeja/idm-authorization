@@ -9,10 +9,14 @@ import com.jberdeja.idm_authorization.entity.management_record.Application;
 import com.jberdeja.idm_authorization.entity.management_record.Status;
 import com.jberdeja.idm_authorization.entity.management_record.User;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Builder
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 @Document(collection = "access_management_documentation")
 public class ManagementRecordEntity {
